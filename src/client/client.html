@@ -1,0 +1,131 @@
+<header></header>
+<body>
+<script src="pixi.js"></script>
+
+
+<script type="text/javascript">
+var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+
+var renderer = PIXI.autoDetectRenderer(w, h,{backgroundColor : 0x1099bb});
+document.body.appendChild(renderer.view);
+
+// create the root of the scene graph
+var stage = new PIXI.Container();
+
+visible_objects = {};
+
+var ws = new WebSocket("ws://localhost:8888/websocket");
+ws.onopen = function() {
+   ws.send("Hello, world");
+};
+
+ws.onmessage = function (evt) {
+	upd_obj_data = JSON.parse(evt.data);
+
+	console.log(evt.data);
+	console.log(JSON.stringify(upd_obj_data));
+
+	updated_objects = {}
+	
+	// make list of updated objects
+	for (obj in upd_obj_data) {
+		console.log("add updated object:");
+		console.log(JSON.stringify(upd_obj_data[obj].name));		
+		updated_objects[upd_obj_data[obj].name] = true;
+	}
+	
+	console.log("update objects:");
+	console.log(JSON.stringify(updated_objects));
+
+	
+	// remove
+	for (obj_key in visible_objects) {
+		if (updated_objects[obj_key]) {
+			console.log("exists:");
+			console.log(JSON.stringify(obj_key));
+		} else {
+			console.log("remove:");
+			console.log(JSON.stringify(obj_key));
+
+			stage.removeChild(visible_objects[obj_key]);
+			delete visible_objects[obj_key];
+		}
+	}
+
+	
+	
+	// update & add
+	for (obj in upd_obj_data) {
+		
+		if (upd_obj_data[obj].name in visible_objects) {
+			// update
+			console.log("update:");
+			console.log(JSON.stringify(upd_obj_data[obj].name));
+			visible_objects[upd_obj_data[obj].name].position.x = upd_obj_data[obj].x;
+			visible_objects[upd_obj_data[obj].name].position.y = upd_obj_data[obj].y;
+			visible_objects[upd_obj_data[obj].name].scale.x = upd_obj_data[obj].scale;
+			visible_objects[upd_obj_data[obj].name].scale.y = upd_obj_data[obj].scale;
+		}
+		else {
+			// append
+			console.log("append:");
+			console.log(JSON.stringify(upd_obj_data[obj].name));
+
+			var texture = PIXI.Texture.fromImage('assets/spaceship.png');
+			var new_object = new PIXI.Sprite(texture);
+					
+			visible_objects[upd_obj_data[obj].name] = new_object;
+			new_object.position.x = upd_obj_data[obj].x;
+			new_object.position.y = upd_obj_data[obj].y;
+			new_object.scale.x = upd_obj_data[obj].scale;
+			new_object.scale.y = upd_obj_data[obj].scale;
+			
+			stage.addChild(new_object);			
+		}
+	}
+
+};
+
+
+// create a texture from an image path
+var texture = PIXI.Texture.fromImage('assets/spaceship.png');
+
+// create a new Sprite using the texture
+var bunny = new PIXI.Sprite(texture);
+
+//var circle = PIXI.Circle(0, 0, 20);
+
+// center the sprite's anchor point
+bunny.anchor.x = 0.5;
+bunny.anchor.y = 0.5;
+
+// move the sprite to the center of the screen
+bunny.position.x = 200;
+bunny.position.y = 150;
+
+bunny.scale.x = 0.2;
+bunny.scale.y = 0.2;
+
+stage.addChild(bunny);
+visible_objects["obj1"] = bunny;
+
+
+// start animating
+animate();
+function animate() {
+    requestAnimationFrame(animate);
+
+//    circle.position.x = bunny.position.x + 100;
+//    circle.position.y = bunny.position.y + 100;
+    
+    // just for fun, let's rotate mr rabbit a little
+    //for (obj in visible_objects) {
+    //	visible_objects[obj].rotation += 0.1;	
+    //}
+
+    // render the container
+    renderer.render(stage);
+}
+</script>
+</body>
