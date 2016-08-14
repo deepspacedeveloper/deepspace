@@ -2,22 +2,22 @@ from wor.robot import Robot
 
 
 class RobotWorld:
-    
+
     def __init__(self):
         self._robot_counter = 0
         self._robot_by_name = {}
         self._all_robots = []
-    
-    
+
+
     def __iter__(self):
         return RobotWorldIterator(self._all_robots)
         
     
-    def build_robot(self, robot_name=None, rx=None, ry=None, scale=1):
+    def build_robot(self, name=None, rx=None, ry=None, scale=1):
         
-        r = Robot(name=robot_name, x=rx, y=ry, scale=scale)
+        r = Robot(name=name, x=rx, y=ry, scale=scale)
         
-        if robot_name== None:
+        if name== None:
             r.set_name("noname " + str(self._robot_counter))
         
         self._robot_counter += 1
