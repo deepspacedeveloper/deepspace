@@ -6,7 +6,7 @@ import tornado.web
 
 from tornado.websocket import WebSocketHandler
 from tornado import gen
-from wor.world import World
+from deepspace.world import World
 
 websockets = {}
 

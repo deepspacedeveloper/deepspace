@@ -2,8 +2,8 @@
 """
 import unittest
 
-from wor.character import Character
-from wor.world import World
+from deepspace.character import Character
+from deepspace.world import World
 
 
 class TestBaseCharacterFunctions(unittest.TestCase):

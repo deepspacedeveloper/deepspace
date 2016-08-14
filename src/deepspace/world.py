@@ -1,7 +1,7 @@
-"""World
+"""Deepspace World
 """
 
-from wor.character import Character
+from deepspace.character import Character
 
 
 class World:
