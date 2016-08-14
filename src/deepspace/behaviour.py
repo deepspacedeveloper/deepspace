@@ -5,20 +5,23 @@
 class BaseBehaviour(object):
     """Base class for Command
     """
-
-    def __init__(self, character, time):
-        object.__init__()
-        self._character = character
-        self._start_time = time
+    def __init__(self):
+        object.__init__(self)
+        self._character     = None
 
 
-    def init(self):
-        """ Initialisation
+    def attach(self, character):
+        """ attach to character
+        """
+        self._character     = character
+
+
+    def animate(self):
+        """Animate character
         """
         pass
 
-
-    def animate(self, current_time):
-        """Animate character
+    def is_done(self):
+        """Return True if behaviour is finished and should be deleted
         """
         pass

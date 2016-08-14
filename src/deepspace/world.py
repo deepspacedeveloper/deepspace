@@ -1,6 +1,5 @@
 """Deepspace World
 """
-
 from deepspace.character import Character
 
 
