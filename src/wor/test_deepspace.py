@@ -1,42 +1,47 @@
+"""Unit tests for deepspace
+"""
 import unittest
 
-from wor.robot import Robot
-from wor.world import RobotWorld
+from wor.character import Character
+from wor.world import World
 
-class TestRobot(unittest.TestCase):
-    
+
+class TestBaseCharacterFunctions(unittest.TestCase):
+    """Unit tests for basic characters and world functions
+    """
+
     def test_initRobot(self):
         
-        robot = Robot()
+        robot = Character()
         
         self.assertEqual(robot.get_name(), "noname", "Bad robot's name. It should be 'noname'")
         
-        r = Robot(name="Vasya")
+        r = Character(name="Vasya")
         self.assertEqual(r.get_name(), "Vasya", "Bad robot's name. It should be 'Vasya'")
         
         
     def test_world_createrobot(self):
 
-        w = RobotWorld()
+        w = World()
         
-        r0 = w.build_robot()
+        r0 = w.build_character()
 
         self.assertEqual(r0.get_name(), "noname 0", "Bad robot name. It must be 'noname 0'")
-        self.assertEqual(w.get_robots_count(), 1, "Bad robots count. It must be 1")
+        self.assertEqual(w.get_characters_count(), 1, "Bad robots count. It must be 1")
 
-        r1 = w.build_robot()
+        r1 = w.build_character()
         
         self.assertEqual(r1.get_name(), "noname 1", "Bad robot name. It must be 'noname 1'")
-        self.assertEqual(w.get_robots_count(), 2, "Bad robots count. It must be 2")
+        self.assertEqual(w.get_characters_count(), 2, "Bad robots count. It must be 2")
 
 
     def test_worldIterator(self):
 
-        w = RobotWorld()
+        w = World()
         for i in "12345":
-            w.build_robot(i)
+            w.build_character(i)
         
-        self.assertEqual(w.get_robots_count(), 5, "Wrong robot count")
+        self.assertEqual(w.get_characters_count(), 5, "Wrong robot count")
         
         i = 1
         for robot in w:

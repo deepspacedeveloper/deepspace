@@ -6,7 +6,7 @@ import tornado.web
 
 from tornado.websocket import WebSocketHandler
 from tornado import gen
-from wor.world import RobotWorld
+from wor.world import World
 
 websockets = {}
 
@@ -59,9 +59,9 @@ def make_app():
 
 def init_world():
     global world
-    world.build_robot(name="Alex",rx=50,ry=50,scale = 0.5)
-    world.build_robot("Boris", rx=150, ry=150, scale = 0.2)
-    world.build_robot("Anatoliy", rx=250, ry=250)
+    world.build_character(name="Alex",position_x=50,position_y=50,scale = 0.5)
+    world.build_character("Boris", position_x=150, position_y=150, scale = 0.2)
+    world.build_character("Anatoliy", position_x=250, position_y=250)
 
 
 @gen.coroutine
@@ -83,7 +83,10 @@ def updater_clients():
             entities = []
 
             for robot in world:
-                entities.append({"name":robot.get_name(), "x":robot.get_x(), "y":robot.get_y(), "scale":robot.scale})
+                entities.append({"name":robot.get_name(),
+                                 "x":robot.get_x(),
+                                 "y":robot.get_y(),
+                                 "scale":robot.scale})
 
             result = json.dumps(entities)
 
@@ -91,12 +94,12 @@ def updater_clients():
             client.write_message(result)
 
 
-world = RobotWorld()
+world = World()
 
 if __name__ == "__main__":
     init_world()
     tornado.ioloop.IOLoop.current().add_callback(updater)
     tornado.ioloop.IOLoop.current().add_callback(updater_clients)
-    app = make_app()
-    app.listen(8888)
+    application_instance = make_app()
+    application_instance.listen(8888)
     tornado.ioloop.IOLoop.current().start()

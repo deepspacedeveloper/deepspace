@@ -1,13 +1,14 @@
-class Robot():
+class Character():
     def __init__(self, name=None, x=0, y=0, scale=1):
         self._x = x
         self._y = y
         self.scale = scale
+
         if name == None:
             self._name = "noname"
         else:
             self._name = name
-        
+
     def get_name(self):
         return self._name
 

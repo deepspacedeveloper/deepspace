@@ -1,7 +1,12 @@
-from wor.robot import Robot
+"""World
+"""
+
+from wor.character import Character
 
 
-class RobotWorld:
+class World:
+    """World contains all characters
+    """
 
     def __init__(self):
         self._robot_counter = 0
@@ -10,44 +15,49 @@ class RobotWorld:
 
 
     def __iter__(self):
-        return RobotWorldIterator(self._all_robots)
+        return WorldIterator(self._all_robots)
 
 
-    def build_robot(self, name=None, rx=None, ry=None, scale=1):
-        r = Robot(name=name, x=rx, y=ry, scale=scale)
+    def build_character(self, name=None, position_x=None, position_y=None, scale=1):
+        """Build character and attach to world
+        """
+
+        new_robot = Character(name = name, x = position_x, y = position_y, scale = scale)
 
         if name == None:
-            r.set_name("noname " + str(self._robot_counter))
+            new_robot.set_name("noname " + str(self._robot_counter))
 
         self._robot_counter += 1
-        self._robot_by_name[r.get_name()] = r
-        self._all_robots.append(r)
-        
-        return r 
-    
-    
-    def get_robots_count(self):
-        return self._robot_counter
-    
+        self._robot_by_name[new_robot.get_name()] = new_robot
+        self._all_robots.append(new_robot)
 
-class RobotWorldIterator:
+        return new_robot
+
+
+    def get_characters_count(self):
+        """Return count of attached characters
+        """
+        return self._robot_counter
+
+
+class WorldIterator:
+    """Iterator for CharacterWorld
+    """
     def __init__(self, robots):
         self._all_robots = robots
-        self._i = 0
-    
-    
+        self._iterator_position = 0
+
+
     def __iter__(self):
         return self
-    
-    
+
+
     def __next__(self):
-        if self._i<len(self._all_robots):
-            result = self._all_robots[self._i]
-            self._i += 1
-            return result 
+        if self._iterator_position<len(self._all_robots):
+            result = self._all_robots[self._iterator_position]
+            self._iterator_position += 1
+            return result
         else:
             raise StopIteration()
-        
-    
-        
-    
+
+
