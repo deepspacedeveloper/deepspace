@@ -17,36 +17,37 @@ visible_objects = {};
 
 var ws = new WebSocket("ws://localhost:8888/websocket");
 ws.onopen = function() {
-   ws.send("Hello, world");
+  // ws.send("Hello, world");
 };
+
 
 ws.onmessage = function (evt) {
 	upd_obj_data = JSON.parse(evt.data);
 
-	console.log(evt.data);
-	console.log(JSON.stringify(upd_obj_data));
+	//console.log(evt.data);
+	//console.log(JSON.stringify(upd_obj_data));
 
 	updated_objects = {}
 	
 	// make list of updated objects
 	for (obj in upd_obj_data) {
-		console.log("add updated object:");
-		console.log(JSON.stringify(upd_obj_data[obj].name));		
+		//console.log("add updated object:");
+		//console.log(JSON.stringify(upd_obj_data[obj].name));		
 		updated_objects[upd_obj_data[obj].name] = true;
 	}
 	
-	console.log("update objects:");
-	console.log(JSON.stringify(updated_objects));
+	//console.log("update objects:");
+	//console.log(JSON.stringify(updated_objects));
 
 	
 	// remove
 	for (obj_key in visible_objects) {
 		if (updated_objects[obj_key]) {
-			console.log("exists:");
-			console.log(JSON.stringify(obj_key));
+			//console.log("exists:");
+			//console.log(JSON.stringify(obj_key));
 		} else {
-			console.log("remove:");
-			console.log(JSON.stringify(obj_key));
+			//console.log("remove:");
+			//console.log(JSON.stringify(obj_key));
 
 			stage.removeChild(visible_objects[obj_key]);
 			delete visible_objects[obj_key];
@@ -60,8 +61,8 @@ ws.onmessage = function (evt) {
 		
 		if (upd_obj_data[obj].name in visible_objects) {
 			// update
-			console.log("update:");
-			console.log(JSON.stringify(upd_obj_data[obj].name));
+			//console.log("update:");
+			//console.log(JSON.stringify(upd_obj_data[obj].name));
 			visible_objects[upd_obj_data[obj].name].position.x = upd_obj_data[obj].x;
 			visible_objects[upd_obj_data[obj].name].position.y = upd_obj_data[obj].y;
 			visible_objects[upd_obj_data[obj].name].scale.x = upd_obj_data[obj].scale;
@@ -69,8 +70,8 @@ ws.onmessage = function (evt) {
 		}
 		else {
 			// append
-			console.log("append:");
-			console.log(JSON.stringify(upd_obj_data[obj].name));
+			//console.log("append:");
+			//console.log(JSON.stringify(upd_obj_data[obj].name));
 
 			var texture = PIXI.Texture.fromImage('assets/spaceship.png');
 			var new_object = new PIXI.Sprite(texture);
@@ -86,6 +87,19 @@ ws.onmessage = function (evt) {
 	}
 
 };
+
+
+document.body.onclick = function(event) {
+	msg_obj = {}
+	
+	msg_obj["command"] = "mouse_click"
+	msg_obj["button"] = event.which
+	msg_obj["x"] = event.clientX
+	msg_obj["y"] = event.clientY
+	
+	console.log(JSON.stringify(msg_obj))	
+	ws.send(JSON.stringify(msg_obj))
+}
 
 
 // create a texture from an image path

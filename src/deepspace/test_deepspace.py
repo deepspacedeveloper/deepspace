@@ -2,6 +2,8 @@
 """
 import unittest
 import uuid
+import json
+
 from deepspace.character import Character
 from deepspace.world import World
 
@@ -135,5 +137,47 @@ class TestBaseCharacterFunctions(unittest.TestCase):
         self.assertEqual(registry1, registry2, "Registeries should be the same instance")
 
 
+    def test_visible_character(self):
+        'test for data structure'
+        from deepspace.remoteclient import VisibleCharacter
 
+        visible_character = VisibleCharacter()
+
+        visible_character.character = 1
+        visible_character.need_to_be_refreshed = True
+
+        self.assertEqual(visible_character.need_to_be_refreshed, True,
+                         "Visible character is broken")
+
+        self.assertEqual(visible_character.character, 1,
+                         "Visible character is broken 1")
+
+
+    def test_websocket_mouse_validator(self):
+        'test mouse click command validator'
+        from deepspace.messages import is_valid_mouse_command
+
+        mouse_command = {}
+
+        message_string = json.dumps(mouse_command)
+        message_object = json.loads(message_string)
+        self.assertNotEqual(is_valid_mouse_command(message_object), True,
+                            "Validator is broken. It is wrong message 1")
+
+        mouse_command["command"]="mouse_cl"
+
+        message_string = json.dumps(mouse_command)
+        message_object = json.loads(message_string)
+        self.assertNotEqual(is_valid_mouse_command(message_object), True,
+                            "Validator is broken. It is wrong message 2")
+
+        mouse_command["command"]="mouse_click"
+        mouse_command["button"]=1
+        mouse_command["x"]=50
+        mouse_command["y"]=20
+
+        message_string = json.dumps(mouse_command)
+        message_object = json.loads(message_string)
+        self.assertEqual(is_valid_mouse_command(message_object), True,
+                         "Validator is broken. It is valid message")
 

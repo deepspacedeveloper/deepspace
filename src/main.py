@@ -64,7 +64,7 @@ def updater_clients():
     clients = RemoteClientRegistry()
 
     while True:
-        yield gen.sleep(0.1)
+        yield gen.sleep(1)
 
         for key, client in clients.items():
 
