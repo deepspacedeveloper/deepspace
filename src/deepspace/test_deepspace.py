@@ -132,6 +132,7 @@ class TestBaseCharacterFunctions(unittest.TestCase):
         registry2.add_remote_client(client2)
 
         self.assertEqual(registry1.get_client_count(), 2, "Registry must contain 2 elements")
+        self.assertEqual(registry1, registry2, "Registeries should be the same instance")
 
 
 
