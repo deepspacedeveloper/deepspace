@@ -97,7 +97,7 @@ class TestBaseCharacterFunctions(unittest.TestCase):
 
         class StringSingleton(Singleton):
             'test singleton class'
-            def __init__(self,str_val):
+            def __init__(self, str_val):
                 super(StringSingleton, self).__init__()
                 self.str_val = str_val
 

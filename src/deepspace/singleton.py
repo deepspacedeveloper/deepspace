@@ -2,16 +2,11 @@
 '''
 
 
-class Borg(object):
-    'Borg pattern for Singleton implementation'
-    _shared_state = {}
-
-    def __init__(self):
-        self.__dict__ = self._shared_state
-
-
-class Singleton(Borg):
+class Singleton(object):
     'Singleton pattern implementation'
+    instance = None
 
-    def __init__(self):
-        Borg.__init__(self)
+    def __new__(cls, *args, **kwargs):
+        if cls.instance is None:
+            cls.instance = super(Singleton, cls).__new__(cls)
+        return cls.instance
