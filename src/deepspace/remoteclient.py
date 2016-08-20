@@ -15,6 +15,10 @@ class RemoteClientRegistry(Singleton):
         'add remote client int singleton storage'
         self._remote_clients[remote_client.get_uuid()] = remote_client
 
+    def del_remote_client(self, remote_client):
+        'del remote client'
+        del self._remote_clients[remote_client.get_uuid()]
+
     def get_client_count(self):
         'returns client count'
         return len(self._remote_clients)
@@ -41,6 +45,8 @@ class RemoteClient(WebSocketHandler):
         pass
 
     def on_close(self):
+        registry = RemoteClientRegistry()
+        registry.del_remote_client(self)
         print("WebSocket closed:", self._id)
 
     def check_origin(self, origin):
