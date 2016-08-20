@@ -23,7 +23,7 @@ class World:
 
         new_robot = Character(name = name, x = position_x, y = position_y, scale = scale)
 
-        if name == None:
+        if name is None:
             new_robot.set_name("noname " + str(self._robot_counter))
 
         self._robot_counter += 1
