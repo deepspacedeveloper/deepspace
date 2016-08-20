@@ -1,7 +1,7 @@
 """Unit tests for deepspace
 """
 import unittest
-
+import uuid
 from deepspace.character import Character
 from deepspace.world import World
 
@@ -89,3 +89,50 @@ class TestBaseCharacterFunctions(unittest.TestCase):
         character.update()
 
         self.assertEqual(character.get_x(), 10, "Behaivour doesnot deleted")
+
+
+    def test_singleton(self):
+        'test singleton pattern'
+        from deepspace.singleton import Singleton
+
+        class StringSingleton(Singleton):
+            'test singleton class'
+            def __init__(self,str_val):
+                super(StringSingleton, self).__init__()
+                self.str_val = str_val
+
+        singleton1 = StringSingleton("test1")
+        singleton2 = StringSingleton("test2")
+
+        singleton1.str_val = "super string"
+
+        self.assertEqual(singleton1.str_val, singleton2.str_val, "Singletons must be equal")
+
+
+    def test_remote_client_registry(self):
+        'test for singleton registry'
+        from deepspace.remoteclient import RemoteClientRegistry
+
+        registry1 = RemoteClientRegistry()
+        registry2 = RemoteClientRegistry()
+
+        class RemoteClientStub(object):
+            'stub for RemoteClient'
+            def __init__(self):
+                self._id = uuid.uuid4()
+
+            def get_uuid(self):
+                'fake get_id'
+                return self._id
+
+        client1 = RemoteClientStub()
+        client2 = RemoteClientStub()
+
+        registry1.add_remote_client(client1)
+        registry2.add_remote_client(client2)
+
+        self.assertEqual(registry1.get_client_count(), 2, "Registry must contain 2 elements")
+
+
+
+

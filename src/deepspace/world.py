@@ -39,6 +39,12 @@ class World:
         return self._robot_counter
 
 
+    def update_world(self):
+        ' update all world'
+        for character in self:
+            character.update()
+
+
 class WorldIterator:
     """Iterator for CharacterWorld
     """

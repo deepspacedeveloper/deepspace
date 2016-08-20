@@ -1,41 +1,24 @@
+'''Main function
+'''
 import json
-import uuid
 
 import tornado.ioloop
 import tornado.web
 
-from tornado.websocket import WebSocketHandler
+
 from tornado import gen
 from deepspace.world import World
-
-websockets = {}
-
-class EchoWebSocket(WebSocketHandler):
-    def __init__(self, application, request):
-        WebSocketHandler.__init__(self, application, request)
-        self._id = uuid.uuid4()
-
-    def open(self):
-        global websockets
-        websockets[self._id] = self
-        print("WebSocket opened:", self._id)
-
-    def on_message(self, message):
-        pass
-
-    def on_close(self):
-        print("WebSocket closed:", self._id)
-
-    def check_origin(self, origin):
-        return True
-
+from deepspace.remoteclient import RemoteClient
+from deepspace.remoteclient import RemoteClientRegistry
 
 class MainHandler(tornado.web.RequestHandler):
+    'simple method get. It should be refactored into trash'
     def get(self):
         self.write("Hello, world")
 
 
 class EntityHandler(tornado.web.RequestHandler):
+    'TODO refactor me'
     def get(self):
         global world
 
@@ -50,14 +33,16 @@ class EntityHandler(tornado.web.RequestHandler):
 
 
 def make_app():
+    'init tornado web app'
     return tornado.web.Application([
         (r"/", MainHandler),
         (r"/entity", EntityHandler),
-        (r"/websocket", EchoWebSocket)
+        (r"/websocket", RemoteClient)
     ])
 
 
 def init_world():
+    'init world. it should be refactored'
     global world
     world.build_character(name="Alex",position_x=50,position_y=50,scale = 0.5)
     world.build_character("Boris", position_x=150, position_y=150, scale = 0.2)
@@ -66,19 +51,22 @@ def init_world():
 
 @gen.coroutine
 def updater():
+    'update world coroutine'
     while True:
         yield gen.sleep(0.1)
+        world.update_world()
 
-        for robot in world:
-            robot.update()
 
 
 @gen.coroutine
 def updater_clients():
+    'update remote clients'
+    clients = RemoteClientRegistry()
+
     while True:
         yield gen.sleep(0.1)
 
-        for key, client in websockets.items():
+        for key, client in clients.items():
 
             entities = []
 
