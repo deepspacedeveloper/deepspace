@@ -8,7 +8,8 @@ install: "pip install -r requirements.txt"
 script: nosetests
 
 notifications:
-  hipchat: 2b1b8e5a7ebb3fe04c63b2e7cc3949@Deep Space Project
+  hipchat: 2b1b8e5a7ebb3fe04c63b2e7cc3949@3042710
+
 
 
 
