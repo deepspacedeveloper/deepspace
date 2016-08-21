@@ -69,7 +69,7 @@ class TestBaseCharacterFunctions(unittest.TestCase):
             """
             counter = 0
 
-            def animate(self):
+            def animate(self, elapsed_time):
                 self._character.world_position.x += 10
                 self.counter += 1
 
@@ -84,11 +84,11 @@ class TestBaseCharacterFunctions(unittest.TestCase):
         behaviour = SimpleIncrementXOnce()
         character.add_behaviour(behaviour)
 
-        character.update()
+        character.update(1)
 
         self.assertEqual(character.world_position.x, 10, "Behaivour doesnot work")
 
-        character.update()
+        character.update(1)
 
         self.assertEqual(character.world_position.x, 10, "Behaivour doesnot deleted")
 
@@ -120,12 +120,10 @@ class TestBaseCharacterFunctions(unittest.TestCase):
 
         class RemoteClientStub(object):
             'stub for RemoteClient'
+            self.uuid = ""
             def __init__(self):
-                self._id = uuid.uuid4()
+                self.uuid = uuid.uuid4().hex
 
-            def get_uuid(self):
-                'fake get_id'
-                return self._id
 
         client1 = RemoteClientStub()
         client2 = RemoteClientStub()

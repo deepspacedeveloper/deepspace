@@ -3,9 +3,9 @@
 from tornado import gen
 from deepspace.character import Character
 from deepspace.remoteclient import RemoteClientRegistry
+from deepspace.singleton import Singleton
 
-
-class World(object):
+class World(Singleton):
     """World contains all characters
     """
 
