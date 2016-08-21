@@ -41,22 +41,24 @@ class World(object):
         return self._character_counter
 
 
-    def update_world(self):
+    def update_world(self, elapsed_time):
         ' update all world'
 
         for character in self:
-            character.update()
+            character.update(elapsed_time)
 
             for _, client in self.remote_clients.items():
                 client.update_visible_character(character)
 
-            character.changed_since_last_update = False
 
     @gen.coroutine
     def update_clients(self):
         'update remote clients'
-        for _, client in self.remote_clients.items():            
+        for _, client in self.remote_clients.items():
             client.update_remote_client()
+        
+        for character in self:
+            character.client_should_be_refreshed = False
 
 
 class WorldIterator:

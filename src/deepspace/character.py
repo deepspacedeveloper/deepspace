@@ -8,13 +8,16 @@ class Character():
     """
     world_position = Point2d
     uuid = ""
+    
+    speed_x = 0.0
+    speed_y = 0.0
 
     def __init__(self, name=None, x=0, y=0, scale=1):
         self.world_position.x = x
         self.world_position.y = y
         self.scale = scale
         self._behaviours = []
-        self.changed_since_last_update = False
+        self.client_should_be_refreshed = False
         self.uuid = uuid.uuid4().hex
 
         if name is None:
@@ -34,16 +37,16 @@ class Character():
         self._name = name
 
 
-    def update(self):
+    def update(self, elapsed_time):
         """update character state
         """
         for behaviour in self._behaviours:
             if behaviour.is_done():
+                behaviour.detach()
                 self._behaviours.remove(behaviour)
+                self.client_should_be_refreshed = True
             else:
-                behaviour.animate()
-
-        self.changed_since_last_update = True
+                behaviour.animate(elapsed_time)
 
 
     def add_behaviour(self, behaviour):
@@ -51,5 +54,7 @@ class Character():
         """
         behaviour.attach(self)
         self._behaviours.append(behaviour)
+
+        self.client_should_be_refreshed = True
 
 

@@ -132,7 +132,12 @@ class RemoteClient(WebSocketHandler):
                 visible_character.command = "add"
         else:
             if self.visible_characters.__contains__(character.uuid):
-                del self.visible_characters[character.uuid]
+                visible_character = self.visible_characters[character.uuid]
+                if visible_character.command == "delete":
+                    del self.visible_characters[character.uuid]
+                else:
+                    visible_character.command = "delete"
+
 
     @gen.coroutine
     def update_remote_client(self):
@@ -140,15 +145,19 @@ class RemoteClient(WebSocketHandler):
         entities = []
 
         for _, visible_character in self.visible_characters.items():
-
-            entities.append({"name":visible_character.character.uuid,
-                             "x":visible_character.character.world_position.x,
-                             "y":visible_character.character.world_position.y,
-                             "scale":visible_character.character.scale})
+            
+            if visible_character.character.client_should_be_refreshed is True or visible_character.command in ("add","delete"):
+                
+                entities.append({"name":visible_character.character.uuid,
+                                 "x":visible_character.character.world_position.x,
+                                 "y":visible_character.character.world_position.y,
+                                 "scale":visible_character.character.scale,
+                                 "command":visible_character.command,
+                                 "speed_x":visible_character.character.speed_x,
+                                 "speed_y":visible_character.character.speed_y})
 
         result = json.dumps(entities)
 
-        print("writing for:", self.uuid)
         yield self.write_message(result)
 
 

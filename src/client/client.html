@@ -27,32 +27,30 @@ ws.onmessage = function (evt) {
 	//console.log(evt.data);
 	//console.log(JSON.stringify(upd_obj_data));
 
-	updated_objects = {}
+//	updated_objects = {}
 	
 	// make list of updated objects
-	for (obj in upd_obj_data) {
-		//console.log("add updated object:");
-		//console.log(JSON.stringify(upd_obj_data[obj].name));		
-		updated_objects[upd_obj_data[obj].name] = true;
-	}
+//	for (obj in upd_obj_data) {
+//		//console.log("add updated object:");
+//		//console.log(JSON.stringify(upd_obj_data[obj].name));		
+//		updated_objects[upd_obj_data[obj].name] = true;
+//	}
 	
 	//console.log("update objects:");
 	//console.log(JSON.stringify(updated_objects));
 
 	
 	// remove
-	for (obj_key in visible_objects) {
-		if (updated_objects[obj_key]) {
-			//console.log("exists:");
-			//console.log(JSON.stringify(obj_key));
-		} else {
-			//console.log("remove:");
-			//console.log(JSON.stringify(obj_key));
-
-			stage.removeChild(visible_objects[obj_key]);
-			delete visible_objects[obj_key];
-		}
-	}
+//	for (obj_key in visible_objects) {
+//		if (updated_objects[obj_key]) {
+//			//console.log("exists:");
+//			//console.log(JSON.stringify(obj_key));
+//		} else {
+//			//console.log("remove:");
+//			//console.log(JSON.stringify(obj_key));
+//
+//		}
+//	}
 
 	
 	
@@ -60,29 +58,44 @@ ws.onmessage = function (evt) {
 	for (obj in upd_obj_data) {
 		
 		if (upd_obj_data[obj].name in visible_objects) {
-			// update
-			//console.log("update:");
-			//console.log(JSON.stringify(upd_obj_data[obj].name));
-			visible_objects[upd_obj_data[obj].name].position.x = upd_obj_data[obj].x;
-			visible_objects[upd_obj_data[obj].name].position.y = upd_obj_data[obj].y;
-			visible_objects[upd_obj_data[obj].name].scale.x = upd_obj_data[obj].scale;
-			visible_objects[upd_obj_data[obj].name].scale.y = upd_obj_data[obj].scale;
+			if(upd_obj_data[obj].command == "delete") {
+				// delete 
+				console.log("delete:");
+				console.log(JSON.stringify(upd_obj_data[obj]));
+
+				stage.removeChild(visible_objects[upd_obj_data[obj].name]);
+				delete visible_objects[upd_obj_data[obj].name];				
+			} else {
+				// update or add
+				console.log("update:");
+				console.log(JSON.stringify(upd_obj_data[obj]));
+				visible_objects[upd_obj_data[obj].name].position.x = upd_obj_data[obj].x;
+				visible_objects[upd_obj_data[obj].name].position.y = upd_obj_data[obj].y;
+				visible_objects[upd_obj_data[obj].name].scale.x = upd_obj_data[obj].scale;
+				visible_objects[upd_obj_data[obj].name].scale.y = upd_obj_data[obj].scale;
+				visible_objects[upd_obj_data[obj].name].speed_x = upd_obj_data[obj].speed_x;
+				visible_objects[upd_obj_data[obj].name].speed_y = upd_obj_data[obj].speed_y;
+			}
 		}
 		else {
-			// append
-			//console.log("append:");
-			//console.log(JSON.stringify(upd_obj_data[obj].name));
-
-			var texture = PIXI.Texture.fromImage('assets/spaceship.png');
-			var new_object = new PIXI.Sprite(texture);
-					
-			visible_objects[upd_obj_data[obj].name] = new_object;
-			new_object.position.x = upd_obj_data[obj].x;
-			new_object.position.y = upd_obj_data[obj].y;
-			new_object.scale.x = upd_obj_data[obj].scale;
-			new_object.scale.y = upd_obj_data[obj].scale;
-			
-			stage.addChild(new_object);			
+			if(upd_obj_data[obj].command == "add" || upd_obj_data[obj].command == "update") {
+				// add or update
+				console.log("add:");
+				console.log(JSON.stringify(upd_obj_data[obj]));
+	
+				var texture = PIXI.Texture.fromImage('assets/spaceship.png');
+				var new_object = new PIXI.Sprite(texture);
+						
+				visible_objects[upd_obj_data[obj].name] = new_object;
+				new_object.position.x = upd_obj_data[obj].x;
+				new_object.position.y = upd_obj_data[obj].y;
+				new_object.scale.x = upd_obj_data[obj].scale;
+				new_object.scale.y = upd_obj_data[obj].scale;
+				new_object.speed_x = upd_obj_data[obj].speed_x;
+				new_object.speed_y = upd_obj_data[obj].speed_y;
+				
+				stage.addChild(new_object);
+			}
 		}
 	}
 
@@ -121,25 +134,41 @@ bunny.position.y = 150;
 bunny.scale.x = 0.2;
 bunny.scale.y = 0.2;
 
+
 stage.addChild(bunny);
 visible_objects["obj1"] = bunny;
 
+var lastTime = Date.now()
+timeSinceLastFrame = 0;
+function animate() 
+{    
+var now = Date.now();    
+timeSinceLastFrame = now - lastTime;    
+lastTime = now;
+}
+animate();    
 
 // start animating
 animate();
 function animate() {
     requestAnimationFrame(animate);
 
-//    circle.position.x = bunny.position.x + 100;
-//    circle.position.y = bunny.position.y + 100;
-    
-    // just for fun, let's rotate mr rabbit a little
-    //for (obj in visible_objects) {
-    //	visible_objects[obj].rotation += 0.1;	
-    //}
 
     // render the container
+	var now = Date.now();    
+	timeSinceLastFrame = (now - lastTime)/60;    
+	lastTime = now;
+	
+    for (obj in visible_objects) {
+    	//visible_objects[obj].rotation += 0.1;
+    	
+    	visible_objects[obj].x += visible_objects[obj].speed_x * timeSinceLastFrame;
+    	visible_objects[obj].y += visible_objects[obj].speed_y * timeSinceLastFrame;
+    }
+
+    
     renderer.render(stage);
+
 }
 </script>
 </body>
