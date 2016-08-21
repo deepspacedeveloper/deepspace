@@ -12,7 +12,9 @@ class Point2d(object):
         self.x = x
         self.y = y 
 
+
 class Rectangle(object):
     'Rectangle'
-    point_a = Point2d()
-    point_b = Point2d()
+    def __init__(self):
+        self.point_a = Point2d()
+        self.point_b = Point2d()

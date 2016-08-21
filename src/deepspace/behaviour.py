@@ -1,13 +1,13 @@
 """ Behaviour classes
 """
 import math
-from deepspace.math2d import Point2d
 
 class BaseBehaviour(object):
     """Base class for Command
     """
     def __init__(self):
-        object.__init__(self)
+        super(BaseBehaviour, self).__init__()
+        
         self.character     = None
 
 
@@ -35,12 +35,9 @@ class BaseBehaviour(object):
 class LinearMovement(BaseBehaviour):
     """2d linear movement animator
     """
-    point_from  = Point2d()
-    poin_to     = Point2d()
-    speed       = 0.0
-
     def __init__(self, point_from, point_to, speed):
         super(LinearMovement, self).__init__()
+       
         self.point_from = point_from
         self.point_to   = point_to
         self.speed      = speed
@@ -78,10 +75,6 @@ class LinearMovement(BaseBehaviour):
 
         self.animation_elapsed_time -= elapsed_time
 
-        print("animate")
-        print("self.character.uuid=",self.character.uuid)
-        print("self.character.world_position.x", self.character.world_position.x)
-        
 
     def is_done(self):
         """Return True if animation is finished and should be deleted

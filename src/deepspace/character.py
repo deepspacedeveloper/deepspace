@@ -7,6 +7,8 @@ class Character(object):
     """Base Character class
     """
     def __init__(self, name=None, x=0, y=0, scale=1):
+        super(Character, self).__init__()
+        
         self.uuid = ""
         self.uuid = uuid.uuid4().hex
         
@@ -21,16 +23,10 @@ class Character(object):
         self.scale = scale
         self.client_should_be_refreshed = False
 
-        print("self.uuid",self.uuid)
-        print("__init__=",x,y)
 
     def update(self, elapsed_time):
         """update character state
         """
-        print("update")
-        print("self.uuid",self.uuid)
-        print("world_position.x",self.world_position.x)
-        
         for behaviour in self.behaviours:
             if behaviour.is_done():
                 behaviour.detach()

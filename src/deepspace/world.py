@@ -8,7 +8,6 @@ from deepspace.singleton import Singleton
 class World(Singleton):
     """World contains all characters
     """
-
     def __init__(self):
         self._character_counter = 0
         self._character_by_uuid = {}
@@ -52,7 +51,6 @@ class World(Singleton):
         'update remote clients'
         for _, client in self.remote_clients.items():
             client.update_remote_client()
-        
         for character in self:
             character.client_should_be_refreshed = False
 

@@ -11,9 +11,10 @@ from tornado import gen
 
 class RemoteClientRegistry(Singleton):
     'singleton Storage for remote clients'
+    _remote_clients = {}
+
     def __init__(self):
         super(RemoteClientRegistry, self).__init__()
-        self._remote_clients = {}
 
     def add_remote_client(self, remote_client):
         'add remote client int singleton storage'
@@ -35,9 +36,6 @@ class RemoteClientRegistry(Singleton):
 
 class VisibleCharacter(object):
     'data structure for visible character'
-    character = None
-    command = None
-
     def __init__(self, character, command):
         self.character = character
         self.command = command
@@ -47,14 +45,14 @@ class RemoteClient(WebSocketHandler):
     '''WebSocket message handler
     handles client io
     '''
-    visible_characters = {}
-    world_position = Point2d()
-    display_width = 1920
-    display_height = 1080
-    uuid = ""
-
     def __init__(self, application, request):
-        WebSocketHandler.__init__(self, application, request)
+        super(RemoteClient, self).__init__(application, request)
+
+        self.visible_characters = {}
+        self.world_position = Point2d()
+        self.display_width = 1920
+        self.display_height = 1080
+        self.uuid = ""
         self.uuid = uuid.uuid4().hex
 
 
@@ -78,8 +76,6 @@ class RemoteClient(WebSocketHandler):
 
     def check_origin(self, origin):
         return True
-
-
 
 
     def parse_client_message(self, message):
@@ -121,29 +117,26 @@ class RemoteClient(WebSocketHandler):
 
     def update_visible_character(self, character):
         'append visible character'
-        print("character=",character.uuid)
         if self.is_point_visible(character.world_position):
             if self.visible_characters.__contains__(character.uuid):
                 self.visible_characters[character.uuid].command = "update"
-                print("upd")
             else:
                 self.visible_characters[character.uuid] = VisibleCharacter(character,"add")
-                print("add")
         else:
             if self.visible_characters.__contains__(character.uuid):
                 if self.visible_characters[character.uuid].command == "delete":
                     del self.visible_characters[character.uuid]
                 else:
                     self.visible_characters[character.uuid].command = "delete"
-                    print("del")
 
 
     @gen.coroutine
     def update_remote_client(self):
         'send data to remote clinet'
         entities = []
-
+        
         for _, visible_character in self.visible_characters.items():
+
             
             if visible_character.character.client_should_be_refreshed is True or visible_character.command in ("add","delete"):
                 
@@ -154,8 +147,6 @@ class RemoteClient(WebSocketHandler):
                                  "command":visible_character.command,
                                  "speed_x":visible_character.character.speed_x,
                                  "speed_y":visible_character.character.speed_y})
-                print("visible_character.character.uuid", visible_character.character.uuid)
-                print("visible_character.character.world_position.x", visible_character.character.world_position.x)
 
         result = json.dumps(entities)
         yield self.write_message(result)
