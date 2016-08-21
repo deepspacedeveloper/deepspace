@@ -8,13 +8,13 @@ class BaseBehaviour(object):
     """
     def __init__(self):
         object.__init__(self)
-        self._character     = None
+        self.character     = None
 
 
     def attach(self, character):
         """ attach to character
         """
-        self._character     = character
+        self.character     = character
 
 
     def animate(self, elapsed_time):
@@ -62,8 +62,8 @@ class LinearMovement(BaseBehaviour):
         self.speed_x = (self.point_to.x - self.point_from.x)/total_time
         self.speed_y = (self.point_to.y - self.point_from.y)/total_time
         
-        self._character.speed_x += self.speed_x
-        self._character.speed_y += self.speed_y 
+        self.character.speed_x += self.speed_x
+        self.character.speed_y += self.speed_y 
 
         self.animation_elapsed_time = total_time
 
@@ -73,10 +73,14 @@ class LinearMovement(BaseBehaviour):
         delta_x = self.speed_x * elapsed_time
         delta_y = self.speed_y * elapsed_time
 
-        self._character.world_position.x += delta_x
-        self._character.world_position.y += delta_y
+        self.character.world_position.x += delta_x
+        self.character.world_position.y += delta_y
 
         self.animation_elapsed_time -= elapsed_time
+
+        print("animate")
+        print("self.character.uuid=",self.character.uuid)
+        print("self.character.world_position.x", self.character.world_position.x)
         
 
     def is_done(self):
@@ -89,6 +93,6 @@ class LinearMovement(BaseBehaviour):
 
     def detach(self):
         'detach from object'
-        self._character.speed_x -= self.speed_x
-        self._character.speed_y -= self.speed_y 
+        self.character.speed_x -= self.speed_x
+        self.character.speed_y -= self.speed_y 
         

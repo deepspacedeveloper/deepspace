@@ -3,47 +3,38 @@
 import uuid
 from deepspace.math2d import Point2d
 
-class Character():
+class Character(object):
     """Base Character class
     """
-    world_position = Point2d
-    uuid = ""
-    
-    speed_x = 0.0
-    speed_y = 0.0
-
     def __init__(self, name=None, x=0, y=0, scale=1):
-        self.world_position.x = x
-        self.world_position.y = y
-        self.scale = scale
-        self._behaviours = []
-        self.client_should_be_refreshed = False
+        self.uuid = ""
         self.uuid = uuid.uuid4().hex
+        
+        self.speed_x = 0.0
+        self.speed_y = 0.0
+    
+        self.behaviours = []
+    
+        self.world_position = Point2d()
+        self.world_position.set_xy(x, y)
 
-        if name is None:
-            self._name = "noname"
-        else:
-            self._name = name
+        self.scale = scale
+        self.client_should_be_refreshed = False
 
-    def get_name(self):
-        """return name of the character
-        """
-        return self._name
-
-
-    def set_name(self, name):
-        """set name for the object
-        """
-        self._name = name
-
+        print("self.uuid",self.uuid)
+        print("__init__=",x,y)
 
     def update(self, elapsed_time):
         """update character state
         """
-        for behaviour in self._behaviours:
+        print("update")
+        print("self.uuid",self.uuid)
+        print("world_position.x",self.world_position.x)
+        
+        for behaviour in self.behaviours:
             if behaviour.is_done():
                 behaviour.detach()
-                self._behaviours.remove(behaviour)
+                self.behaviours.remove(behaviour)
                 self.client_should_be_refreshed = True
             else:
                 behaviour.animate(elapsed_time)
@@ -53,7 +44,7 @@ class Character():
         """add behaviour
         """
         behaviour.attach(self)
-        self._behaviours.append(behaviour)
+        self.behaviours.append(behaviour)
 
         self.client_should_be_refreshed = True
 

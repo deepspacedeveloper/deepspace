@@ -11,7 +11,7 @@ class World(Singleton):
 
     def __init__(self):
         self._character_counter = 0
-        self._character_by_name = {}
+        self._character_by_uuid = {}
         self._all_characters = []
         self.remote_clients = RemoteClientRegistry()
 
@@ -19,17 +19,14 @@ class World(Singleton):
         return WorldIterator(self._all_characters)
 
 
-    def build_character(self, name=None, position_x=None, position_y=None, scale=1):
+    def build_character(self, position_x=None, position_y=None, scale=1):
         """Build character and attach to world
         """
 
-        new_character = Character(name = name, x = position_x, y = position_y, scale = scale)
-
-        if name is None:
-            new_character.set_name("noname " + str(self._character_counter))
+        new_character = Character(x = position_x, y = position_y, scale = scale)
 
         self._character_counter += 1
-        self._character_by_name[new_character.get_name()] = new_character
+        self._character_by_uuid[new_character.uuid] = new_character
         self._all_characters.append(new_character)
 
         return new_character
@@ -46,7 +43,6 @@ class World(Singleton):
 
         for character in self:
             character.update(elapsed_time)
-
             for _, client in self.remote_clients.items():
                 client.update_visible_character(character)
 

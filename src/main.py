@@ -46,10 +46,10 @@ def make_app():
 def init_world():
     'init world. it should be refactored'
     global world
-    world.build_character(name="Alex",position_x=50,position_y=50,scale = 0.5)
-    world.build_character("Boris", position_x=150, position_y=150, scale = 0.2)
+    world.build_character(position_x=50,position_y=50,scale = 0.5)
+    world.build_character(position_x=150, position_y=150, scale = 0.2)
 
-    moving_character = world.build_character("Anatoliy", position_x=250, position_y=250, scale=0.2)
+    moving_character = world.build_character(position_x=250, position_y=250, scale=0.2)
 
     point_from  = Point2d()
     point_from.set_xy(0, 0)
@@ -60,6 +60,7 @@ def init_world():
     linear_movement = LinearMovement(point_from, point_to, 20)
     moving_character.add_behaviour(linear_movement)
 
+    
 
 @gen.coroutine
 def updater():

@@ -72,6 +72,7 @@ class RemoteClient(WebSocketHandler):
     def on_close(self):
         registry = RemoteClientRegistry()
         registry.del_remote_client(self)
+        self.visible_characters.clear()
         print("WebSocket closed:", self.uuid)
 
 
@@ -120,23 +121,21 @@ class RemoteClient(WebSocketHandler):
 
     def update_visible_character(self, character):
         'append visible character'
-
-        visible_character = VisibleCharacter(character,"")
-
+        print("character=",character.uuid)
         if self.is_point_visible(character.world_position):
             if self.visible_characters.__contains__(character.uuid):
-                visible_character = self.visible_characters[character.uuid]
-                visible_character.command = "update"
+                self.visible_characters[character.uuid].command = "update"
+                print("upd")
             else:
-                self.visible_characters[character.uuid] = visible_character
-                visible_character.command = "add"
+                self.visible_characters[character.uuid] = VisibleCharacter(character,"add")
+                print("add")
         else:
             if self.visible_characters.__contains__(character.uuid):
-                visible_character = self.visible_characters[character.uuid]
-                if visible_character.command == "delete":
+                if self.visible_characters[character.uuid].command == "delete":
                     del self.visible_characters[character.uuid]
                 else:
-                    visible_character.command = "delete"
+                    self.visible_characters[character.uuid].command = "delete"
+                    print("del")
 
 
     @gen.coroutine
@@ -155,9 +154,10 @@ class RemoteClient(WebSocketHandler):
                                  "command":visible_character.command,
                                  "speed_x":visible_character.character.speed_x,
                                  "speed_y":visible_character.character.speed_y})
+                print("visible_character.character.uuid", visible_character.character.uuid)
+                print("visible_character.character.world_position.x", visible_character.character.world_position.x)
 
         result = json.dumps(entities)
-
         yield self.write_message(result)
 
 
