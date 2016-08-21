@@ -10,6 +10,9 @@ script: nosetests
 notifications:
   hipchat: 2b1b8e5a7ebb3fe04c63b2e7cc3949@3042710
 
+addons:
+    code_climate:
+        repo_token: d2bd09ddd2a46347129e4b933b1e750cbe83ab747b904847483cf34dfd94a888
 
 
 
