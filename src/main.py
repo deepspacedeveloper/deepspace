@@ -9,7 +9,6 @@ import tornado.web
 from tornado import gen
 from deepspace.world import World
 from deepspace.remoteclient import RemoteClient
-from deepspace.remoteclient import RemoteClientRegistry
 
 class MainHandler(tornado.web.RequestHandler):
     'simple method get. It should be refactored into trash'
@@ -61,26 +60,11 @@ def updater():
 @gen.coroutine
 def updater_clients():
     'update remote clients'
-    clients = RemoteClientRegistry()
-
+    print("Starting updating clients...")
     while True:
+        print("Updating clients...")
         yield gen.sleep(1)
-
-        for key, client in clients.items():
-
-            entities = []
-
-            for robot in world:
-                entities.append({"name":robot.get_name(),
-                                 "x":robot.get_x(),
-                                 "y":robot.get_y(),
-                                 "scale":robot.scale})
-
-            result = json.dumps(entities)
-
-            print("writing for:", key)
-            client.write_message(result)
-
+        world.update_clients()
 
 world = World()
 

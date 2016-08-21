@@ -70,7 +70,7 @@ class TestBaseCharacterFunctions(unittest.TestCase):
             counter = 0
 
             def animate(self):
-                self._character.set_x(self._character.get_x()+10)
+                self._character.world_position.x += 10
                 self.counter += 1
 
             def is_done(self):
@@ -86,11 +86,11 @@ class TestBaseCharacterFunctions(unittest.TestCase):
 
         character.update()
 
-        self.assertEqual(character.get_x(), 10, "Behaivour doesnot work")
+        self.assertEqual(character.world_position.x, 10, "Behaivour doesnot work")
 
         character.update()
 
-        self.assertEqual(character.get_x(), 10, "Behaivour doesnot deleted")
+        self.assertEqual(character.world_position.x, 10, "Behaivour doesnot deleted")
 
 
     def test_singleton(self):
@@ -141,12 +141,9 @@ class TestBaseCharacterFunctions(unittest.TestCase):
         'test for data structure'
         from deepspace.remoteclient import VisibleCharacter
 
-        visible_character = VisibleCharacter()
+        visible_character = VisibleCharacter(1,"add")
 
-        visible_character.character = 1
-        visible_character.need_to_be_refreshed = True
-
-        self.assertEqual(visible_character.need_to_be_refreshed, True,
+        self.assertEqual(visible_character.command, "add",
                          "Visible character is broken")
 
         self.assertEqual(visible_character.character, 1,

@@ -6,6 +6,7 @@ from deepspace.singleton import Singleton
 from deepspace.math2d import Point2d
 import deepspace.messages
 from tornado.websocket import WebSocketHandler
+from tornado import gen
 
 
 class RemoteClientRegistry(Singleton):
@@ -16,11 +17,12 @@ class RemoteClientRegistry(Singleton):
 
     def add_remote_client(self, remote_client):
         'add remote client int singleton storage'
-        self._remote_clients[remote_client.get_uuid()] = remote_client
+        self._remote_clients[remote_client.uuid] = remote_client
 
     def del_remote_client(self, remote_client):
         'del remote client'
-        del self._remote_clients[remote_client.get_uuid()]
+        if self._remote_clients.__contains__(remote_client.uuid):
+            del self._remote_clients[remote_client.uuid]
 
     def get_client_count(self):
         'returns client count'
@@ -33,7 +35,12 @@ class RemoteClientRegistry(Singleton):
 
 class VisibleCharacter(object):
     'data structure for visible character'
-    __slots__ = ("character", "need_to_be_refreshed")
+    character = None
+    command = None
+
+    def __init__(self, character, command):
+        self.character = character
+        self.command = command
 
 
 class RemoteClient(WebSocketHandler):
@@ -41,40 +48,37 @@ class RemoteClient(WebSocketHandler):
     handles client io
     '''
     visible_characters = {}
-    camera_position = Point2d()
-    display_width = 640
-    display_height = 480
-
+    world_position = Point2d()
+    display_width = 1920
+    display_height = 1080
+    uuid = ""
 
     def __init__(self, application, request):
         WebSocketHandler.__init__(self, application, request)
-        self._id = uuid.uuid4()
+        self.uuid = uuid.uuid4().hex
 
 
     def open(self):
         registry = RemoteClientRegistry()
         registry.add_remote_client(self)
-        print("WebSocket opened:", self._id)
+        print("WebSocket opened:", self.uuid)
 
 
     def on_message(self, message):
-        print("ON_MESSAGE:",self.get_uuid())
+        print("ON_MESSAGE:",self.uuid)
         self.parse_client_message(message)
 
 
     def on_close(self):
         registry = RemoteClientRegistry()
         registry.del_remote_client(self)
-        print("WebSocket closed:", self._id)
+        print("WebSocket closed:", self.uuid)
 
 
     def check_origin(self, origin):
         return True
 
 
-    def get_uuid(self):
-        'returns unique client id'
-        return self._id
 
 
     def parse_client_message(self, message):
@@ -96,3 +100,55 @@ class RemoteClient(WebSocketHandler):
     def on_client_mouse_event(self, message_object):
         'process mouse event'
         pass
+
+
+    def is_point_visible(self, world_position):
+        'checks is point visible in camera'
+        point_a = Point2d()
+        point_b = Point2d()
+
+        point_a.x = self.world_position.x - self.display_width / 2
+        point_a.y = self.world_position.y - self.display_width / 2
+
+        point_b.x = self.world_position.x + self.display_height / 2
+        point_b.y = self.world_position.y + self.display_width  / 2
+
+        if (point_a.x <= world_position.x and world_position.x <= point_b.x) and (point_a.y <= world_position.y and world_position.y <= point_b.y):
+            return True
+        return False
+
+
+    def update_visible_character(self, character):
+        'append visible character'
+
+        visible_character = VisibleCharacter(character,"")
+
+        if self.is_point_visible(character.world_position):
+            if self.visible_characters.__contains__(character.uuid):
+                visible_character = self.visible_characters[character.uuid]
+                visible_character.command = "update"
+            else:
+                self.visible_characters[character.uuid] = visible_character
+                visible_character.command = "add"
+        else:
+            if self.visible_characters.__contains__(character.uuid):
+                del self.visible_characters[character.uuid]
+
+    @gen.coroutine
+    def update_remote_client(self):
+        'send data to remote clinet'
+        entities = []
+
+        for _, visible_character in self.visible_characters.items():
+
+            entities.append({"name":visible_character.character.uuid,
+                             "x":visible_character.character.world_position.x,
+                             "y":visible_character.character.world_position.y,
+                             "scale":visible_character.character.scale})
+
+        result = json.dumps(entities)
+
+        print("writing for:", self.uuid)
+        yield self.write_message(result)
+
+

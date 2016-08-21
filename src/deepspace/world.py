@@ -1,9 +1,11 @@
-"""Deepspace World
+"""Deep Space World
 """
+from tornado import gen
 from deepspace.character import Character
+from deepspace.remoteclient import RemoteClientRegistry
 
 
-class World:
+class World(object):
     """World contains all characters
     """
 
@@ -11,7 +13,7 @@ class World:
         self._character_counter = 0
         self._character_by_name = {}
         self._all_characters = []
-
+        self.remote_clients = RemoteClientRegistry()
 
     def __iter__(self):
         return WorldIterator(self._all_characters)
@@ -41,8 +43,20 @@ class World:
 
     def update_world(self):
         ' update all world'
+
         for character in self:
             character.update()
+
+            for _, client in self.remote_clients.items():
+                client.update_visible_character(character)
+
+            character.changed_since_last_update = False
+
+    @gen.coroutine
+    def update_clients(self):
+        'update remote clients'
+        for _, client in self.remote_clients.items():            
+            client.update_remote_client()
 
 
 class WorldIterator:
