@@ -57,7 +57,7 @@ def init_world():
     point_to    = Point2d()
     point_to.set_xy(200, 200)
 
-    linear_movement = LinearMovement(point_from, point_to, 10)
+    linear_movement = LinearMovement(point_from, point_to, 20)
     moving_character.add_behaviour(linear_movement)
 
 
@@ -68,6 +68,7 @@ def updater():
     while True:
         yield gen.sleep(0.1)
         elapsed_time = time.time() - start_time
+        start_time = time.time()
         world.update_world(elapsed_time)
 
 

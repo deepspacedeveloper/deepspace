@@ -156,7 +156,7 @@ function animate() {
 
     // render the container
 	var now = Date.now();    
-	timeSinceLastFrame = (now - lastTime)/60;    
+	timeSinceLastFrame = (now - lastTime)/1000;    
 	lastTime = now;
 	
     for (obj in visible_objects) {
