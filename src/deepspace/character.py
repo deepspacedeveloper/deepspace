@@ -45,3 +45,12 @@ class Character(object):
         self.client_should_be_refreshed = True
 
 
+    def remove_all_behaviours(self):
+        'remove all animators'
+        for behaviour in self.behaviours:
+            behaviour.detach()
+            self.behaviours.remove(behaviour)
+        
+        self.client_should_be_refreshed = True
+        
+

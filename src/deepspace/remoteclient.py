@@ -5,6 +5,7 @@ import json
 from deepspace.singleton import Singleton
 from deepspace.math2d import Point2d
 from deepspace.math2d import Vector2D
+from deepspace.behaviour import LinearMovement
 import deepspace.messages
 from tornado.websocket import WebSocketHandler
 from tornado import gen
@@ -62,8 +63,9 @@ class RemoteClient(WebSocketHandler):
         self.world_position = Point2d()
         
         self.need_refresh_visible_objects = False
-
-        self.change_world_position(1100, 2100)
+        
+        self.client_visible_character = None
+        
 
     def change_world_position(self, position_x, position_y):
         'change world_position and set flag to refresh all visible objects'
@@ -80,6 +82,7 @@ class RemoteClient(WebSocketHandler):
     def open(self):
         registry = RemoteClientRegistry()
         registry.add_remote_client(self)
+        self.on_create_client()
         print("WebSocket opened:", self.uuid)
 
 
@@ -115,10 +118,29 @@ class RemoteClient(WebSocketHandler):
             print("Wrong message",message)
 
 
+    def on_create_client(self):
+        'socket open and client need to be initiated'
+        self.world_position.set_xy(1000, 1000)
+        from deepspace.world import World
+
+        world = World()
+        self.client_visible_character =  world.build_character(self.world_position.x, self.world_position.y, 0.1)
+        
+
     def on_client_mouse_event(self, message_object):
         'process mouse event'
-        pass
-
+        self.client_visible_character.remove_all_behaviours()
+        
+        #transform mouse client coordinates to world coordinates
+        mouse_world_position = Point2d()
+        mouse_world_position.set_xy(self.world_position.x + message_object["x"], 
+                                    self.world_position.y + message_object["y"])
+        
+        point_from = Point2d()
+        point_from.set_xy(self.client_visible_character.world_position.x, self.client_visible_character.world_position.y) 
+        linear_movement = LinearMovement(point_from, mouse_world_position, 20)
+        self.client_visible_character.add_behaviour(linear_movement)
+        
 
     def is_point_visible(self, world_position):
         'checks is point visible in camera'
@@ -155,6 +177,7 @@ class RemoteClient(WebSocketHandler):
     def update_remote_client(self):
         'send data to remote clinet'
         entities = []
+        dbg = []
         
         for _, visible_character in self.visible_characters.items():
 
@@ -173,6 +196,16 @@ class RemoteClient(WebSocketHandler):
                                  "command":visible_character.command,
                                  "speed_x":visible_character.character.speed_x - self.line_speed.delta_x,
                                  "speed_y":visible_character.character.speed_y - self.line_speed.delta_y})
+                dbg = []
+                dbg.append({"name":visible_character.character.uuid,
+                                 "x":visible_character.character.world_position.x - self.world_position.x,
+                                 "y":visible_character.character.world_position.y - self.world_position.y,
+                                 "scale":visible_character.character.scale,
+                                 "command":visible_character.command,
+                                 "speed_x":visible_character.character.speed_x - self.line_speed.delta_x,
+                                 "speed_y":visible_character.character.speed_y - self.line_speed.delta_y})
+                dumped = json.dumps(dbg)
+                print(dumped)
 
         self.need_refresh_visible_objects = False
         

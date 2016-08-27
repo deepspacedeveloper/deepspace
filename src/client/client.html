@@ -49,8 +49,8 @@ ws.onmessage = function (evt) {
 				// update or add
 				console.log("update:");
 				console.log(JSON.stringify(upd_obj_data[obj]));
-				visible_objects[upd_obj_data[obj].name].position.x = upd_obj_data[obj].x + display_x - upd_obj_data[obj].width/2;
-				visible_objects[upd_obj_data[obj].name].position.y = upd_obj_data[obj].y + display_y - upd_obj_data[obj].height/2;
+				visible_objects[upd_obj_data[obj].name].position.x = upd_obj_data[obj].x + display_x ;//- visible_objects[upd_obj_data[obj].name].width/2;
+				visible_objects[upd_obj_data[obj].name].position.y = upd_obj_data[obj].y + display_y ;//- visible_objects[upd_obj_data[obj].name].height/2;
 				visible_objects[upd_obj_data[obj].name].scale.x = upd_obj_data[obj].scale;
 				visible_objects[upd_obj_data[obj].name].scale.y = upd_obj_data[obj].scale;
 				visible_objects[upd_obj_data[obj].name].speed_x = upd_obj_data[obj].speed_x;
@@ -68,8 +68,8 @@ ws.onmessage = function (evt) {
 				var new_object = new PIXI.Sprite(texture);
 						
 				visible_objects[upd_obj_data[obj].name] = new_object;
-				new_object.position.x = upd_obj_data[obj].x + display_x  - new_object.width/2;
-				new_object.position.y = upd_obj_data[obj].y + display_y  - new_object.height/2;
+				new_object.position.x = upd_obj_data[obj].x + display_x ;// - new_object.width/2;
+				new_object.position.y = upd_obj_data[obj].y + display_y ;// - new_object.height/2;
 				new_object.scale.x = upd_obj_data[obj].scale;
 				new_object.scale.y = upd_obj_data[obj].scale;
 				new_object.speed_x = upd_obj_data[obj].speed_x;
@@ -90,8 +90,9 @@ document.body.onclick = function(event) {
 	
 	msg_obj["command"] = "mouse_click"
 	msg_obj["button"] = event.which
-	msg_obj["x"] = event.clientX
-	msg_obj["y"] = event.clientY
+	// transform to camera coordinates
+	msg_obj["x"] = event.clientX - display_x
+	msg_obj["y"] = event.clientY - display_y
 	
 	console.log(JSON.stringify(msg_obj))	
 	ws.send(JSON.stringify(msg_obj))

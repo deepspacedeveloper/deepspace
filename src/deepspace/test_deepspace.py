@@ -4,7 +4,6 @@ import unittest
 import uuid
 import json
 
-from deepspace.character import Character
 from deepspace.world import World
 
 

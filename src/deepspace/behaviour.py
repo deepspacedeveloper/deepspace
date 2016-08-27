@@ -61,6 +61,9 @@ class LinearMovement(BaseBehaviour):
         
         self.character.speed_x += self.speed_x
         self.character.speed_y += self.speed_y 
+        
+        self.character.world_position.x = self.point_from.x
+        self.character.world_position.y = self.point_from.y
 
         self.animation_elapsed_time = total_time
 

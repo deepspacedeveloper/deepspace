@@ -8,11 +8,17 @@ from deepspace.singleton import Singleton
 class World(Singleton):
     """World contains all characters
     """
+    instance_initiated = False
+
     def __init__(self):
-        self._character_counter = 0
-        self._character_by_uuid = {}
-        self._all_characters = []
-        self.remote_clients = RemoteClientRegistry()
+        super(World, self).__init__()
+        if self.instance_initiated is False:
+            self._character_counter = 0
+            self._character_by_uuid = {}
+            self._all_characters = []
+            self.remote_clients = RemoteClientRegistry()
+            self.instance_initiated = True
+        
 
     def __iter__(self):
         return WorldIterator(self._all_characters)
