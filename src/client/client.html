@@ -7,6 +7,12 @@
 var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
 var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
 
+var display_y = h / 2;
+var display_x = w / 2;
+
+console.log("clientW:", w);
+console.log("clientH:", h);
+
 var renderer = PIXI.autoDetectRenderer(w, h,{backgroundColor : 0x1099bb});
 document.body.appendChild(renderer.view);
 
@@ -27,32 +33,6 @@ ws.onmessage = function (evt) {
 	//console.log(evt.data);
 	//console.log(JSON.stringify(upd_obj_data));
 
-//	updated_objects = {}
-	
-	// make list of updated objects
-//	for (obj in upd_obj_data) {
-//		//console.log("add updated object:");
-//		//console.log(JSON.stringify(upd_obj_data[obj].name));		
-//		updated_objects[upd_obj_data[obj].name] = true;
-//	}
-	
-	//console.log("update objects:");
-	//console.log(JSON.stringify(updated_objects));
-
-	
-	// remove
-//	for (obj_key in visible_objects) {
-//		if (updated_objects[obj_key]) {
-//			//console.log("exists:");
-//			//console.log(JSON.stringify(obj_key));
-//		} else {
-//			//console.log("remove:");
-//			//console.log(JSON.stringify(obj_key));
-//
-//		}
-//	}
-
-	
 	
 	// update & add
 	for (obj in upd_obj_data) {
@@ -69,12 +49,13 @@ ws.onmessage = function (evt) {
 				// update or add
 				console.log("update:");
 				console.log(JSON.stringify(upd_obj_data[obj]));
-				visible_objects[upd_obj_data[obj].name].position.x = upd_obj_data[obj].x;
-				visible_objects[upd_obj_data[obj].name].position.y = upd_obj_data[obj].y;
+				visible_objects[upd_obj_data[obj].name].position.x = upd_obj_data[obj].x + display_x - upd_obj_data[obj].width/2;
+				visible_objects[upd_obj_data[obj].name].position.y = upd_obj_data[obj].y + display_y - upd_obj_data[obj].height/2;
 				visible_objects[upd_obj_data[obj].name].scale.x = upd_obj_data[obj].scale;
 				visible_objects[upd_obj_data[obj].name].scale.y = upd_obj_data[obj].scale;
 				visible_objects[upd_obj_data[obj].name].speed_x = upd_obj_data[obj].speed_x;
 				visible_objects[upd_obj_data[obj].name].speed_y = upd_obj_data[obj].speed_y;
+				console.log("update local:", visible_objects[upd_obj_data[obj].name].position.x, visible_objects[upd_obj_data[obj].name].position.y);
 			}
 		}
 		else {
@@ -87,13 +68,15 @@ ws.onmessage = function (evt) {
 				var new_object = new PIXI.Sprite(texture);
 						
 				visible_objects[upd_obj_data[obj].name] = new_object;
-				new_object.position.x = upd_obj_data[obj].x;
-				new_object.position.y = upd_obj_data[obj].y;
+				new_object.position.x = upd_obj_data[obj].x + display_x  - new_object.width/2;
+				new_object.position.y = upd_obj_data[obj].y + display_y  - new_object.height/2;
 				new_object.scale.x = upd_obj_data[obj].scale;
 				new_object.scale.y = upd_obj_data[obj].scale;
 				new_object.speed_x = upd_obj_data[obj].speed_x;
 				new_object.speed_y = upd_obj_data[obj].speed_y;
-				
+
+				console.log("add local:", new_object.position.x, new_object.position.y);
+
 				stage.addChild(new_object);
 			}
 		}

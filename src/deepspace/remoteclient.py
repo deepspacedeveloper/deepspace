@@ -4,6 +4,7 @@ import uuid
 import json
 from deepspace.singleton import Singleton
 from deepspace.math2d import Point2d
+from deepspace.math2d import Vector2D
 import deepspace.messages
 from tornado.websocket import WebSocketHandler
 from tornado import gen
@@ -45,15 +46,35 @@ class RemoteClient(WebSocketHandler):
     '''WebSocket message handler
     handles client io
     '''
+
     def __init__(self, application, request):
         super(RemoteClient, self).__init__(application, request)
 
-        self.visible_characters = {}
-        self.world_position = Point2d()
-        self.display_width = 1920
-        self.display_height = 1080
         self.uuid = ""
         self.uuid = uuid.uuid4().hex
+
+        self.visible_characters = {}
+
+        self.display_width = 1920
+        self.display_height = 1080
+        
+        self.line_speed = Vector2D() 
+        self.world_position = Point2d()
+        
+        self.need_refresh_visible_objects = False
+
+        self.change_world_position(1100, 2100)
+
+    def change_world_position(self, position_x, position_y):
+        'change world_position and set flag to refresh all visible objects'
+        self.world_position.set_xy(position_x, position_y)
+        self.need_refresh_visible_objects = True
+        
+
+    def change_line_speed(self, delta_x, delta_y):
+        'change line_speed and set flag to refresh all visible objects'
+        self.line_speed.set_dxdy(delta_x, delta_y)
+        self.need_refresh_visible_objects = True
 
 
     def open(self):
@@ -104,11 +125,11 @@ class RemoteClient(WebSocketHandler):
         point_a = Point2d()
         point_b = Point2d()
 
-        point_a.x = self.world_position.x - self.display_width / 2
-        point_a.y = self.world_position.y - self.display_width / 2
+        point_a.set_xy(self.world_position.x - self.display_width / 2,
+                       self.world_position.y - self.display_width / 2)
 
-        point_b.x = self.world_position.x + self.display_height / 2
-        point_b.y = self.world_position.y + self.display_width  / 2
+        point_b.set_xy(self.world_position.x + self.display_height / 2,
+                       self.world_position.y + self.display_width  / 2)
 
         if (point_a.x <= world_position.x and world_position.x <= point_b.x) and (point_a.y <= world_position.y and world_position.y <= point_b.y):
             return True
@@ -138,17 +159,25 @@ class RemoteClient(WebSocketHandler):
         for _, visible_character in self.visible_characters.items():
 
             
-            if visible_character.character.client_should_be_refreshed is True or visible_character.command in ("add","delete"):
+            if (     self.need_refresh_visible_objects is True
+                ) or (
+                      visible_character.character.client_should_be_refreshed is True
+                ) or (
+                      visible_character.command in ("add","delete")):
                 
+                # render to client(camera) coordinates
                 entities.append({"name":visible_character.character.uuid,
-                                 "x":visible_character.character.world_position.x,
-                                 "y":visible_character.character.world_position.y,
+                                 "x":visible_character.character.world_position.x - self.world_position.x,
+                                 "y":visible_character.character.world_position.y - self.world_position.y,
                                  "scale":visible_character.character.scale,
                                  "command":visible_character.command,
-                                 "speed_x":visible_character.character.speed_x,
-                                 "speed_y":visible_character.character.speed_y})
+                                 "speed_x":visible_character.character.speed_x - self.line_speed.delta_x,
+                                 "speed_y":visible_character.character.speed_y - self.line_speed.delta_y})
 
+        self.need_refresh_visible_objects = False
+        
         result = json.dumps(entities)
         yield self.write_message(result)
+
 
 
