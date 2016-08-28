@@ -5,8 +5,8 @@ import json
 from deepspace.singleton import Singleton
 from deepspace.math2d import Point2d
 from deepspace.math2d import Vector2D
-from deepspace.behaviour import LinearMovement
-import deepspace.messages
+from deepspace.event import ClientMouseEvent
+import deepspace.messages  
 from tornado.websocket import WebSocketHandler
 from tornado import gen
 
@@ -14,12 +14,21 @@ from tornado import gen
 class RemoteClientRegistry(Singleton):
     'singleton Storage for remote clients'
     _remote_clients = {}
+    instance_initiated = False
+    world = None
 
     def __init__(self):
         super(RemoteClientRegistry, self).__init__()
+        if self.instance_initiated is False:
+            self.instance_initiated = True
+            
+            
+    def set_world(self, world):
+        self.world = world
 
     def add_remote_client(self, remote_client):
         'add remote client int singleton storage'
+        remote_client.world = self.world
         self._remote_clients[remote_client.uuid] = remote_client
 
     def del_remote_client(self, remote_client):
@@ -66,6 +75,8 @@ class RemoteClient(WebSocketHandler):
         
         self.client_visible_character = None
         
+        self.world = None
+        
 
     def change_world_position(self, position_x, position_y):
         'change world_position and set flag to refresh all visible objects'
@@ -92,7 +103,7 @@ class RemoteClient(WebSocketHandler):
 
 
     def on_close(self):
-        registry = RemoteClientRegistry()
+        registry = RemoteClientRegistry(self)
         registry.del_remote_client(self)
         self.visible_characters.clear()
         print("WebSocket closed:", self.uuid)
@@ -121,29 +132,22 @@ class RemoteClient(WebSocketHandler):
     def on_create_client(self):
         'socket open and client need to be initiated'
         self.world_position.set_xy(1000, 1000)
-        from deepspace.world import World
 
-        world = World()
-        self.client_visible_character =  world.build_character(self.world_position.x, self.world_position.y, 0.1)
+        self.client_visible_character =  self.world.build_character(self.world_position.x, self.world_position.y, 0.1)
         
 
     def on_client_mouse_event(self, message_object):
         'process mouse event'
-        self.client_visible_character.remove_all_behaviours()
-        
+
         #transform mouse client coordinates to world coordinates
         mouse_world_position = Point2d()
         mouse_world_position.set_xy(self.world_position.x + message_object["x"], 
                                     self.world_position.y + message_object["y"])
         
-        point_from = Point2d()
-        point_from.set_xy(self.client_visible_character.world_position.x, self.client_visible_character.world_position.y) 
+        mouse_event = ClientMouseEvent()
+        mouse_event.attach(mouse_world_position, self.client_visible_character, self)
         
-        linear_movement = LinearMovement(point_from, mouse_world_position, 20)
-        self.client_visible_character.add_behaviour(linear_movement)
-        
-        self.line_speed.set_dxdy(self.client_visible_character.speed_x, self.client_visible_character.speed_y)
-        self.need_refresh_visible_objects = True
+        self.world.add_event(mouse_event)
         
 
     def is_point_visible(self, world_position):
@@ -184,13 +188,17 @@ class RemoteClient(WebSocketHandler):
         dbg = []
         
         if self.client_visible_character.client_should_be_refreshed is True:
-            self.line_speed.set_dxdy(self.client_visible_character.speed_x, self.client_visible_character.speed_y)
-            self.world_position.set_xy(self.client_visible_character.world_position.x, self.client_visible_character.world_position.y)
+            
+            self.line_speed.set_dxdy(self.client_visible_character.speed_x, 
+                                     self.client_visible_character.speed_y)
+            
+            self.world_position.set_xy(self.client_visible_character.world_position.x, 
+                                       self.client_visible_character.world_position.y)
+            
             self.need_refresh_visible_objects = True
         
         for _, visible_character in self.visible_characters.items():
 
-            
             if (     self.need_refresh_visible_objects is True
                 ) or (
                       visible_character.character.client_should_be_refreshed is True

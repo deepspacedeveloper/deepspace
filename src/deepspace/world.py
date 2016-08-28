@@ -5,6 +5,7 @@ from deepspace.character import Character
 from deepspace.remoteclient import RemoteClientRegistry
 from deepspace.singleton import Singleton
 
+
 class World(Singleton):
     """World contains all characters
     """
@@ -17,7 +18,9 @@ class World(Singleton):
             self._character_by_uuid = {}
             self._all_characters = []
             self.remote_clients = RemoteClientRegistry()
+            self.remote_clients.set_world(self)
             self.instance_initiated = True
+            self.next_simulation_loop_events = []
         
 
     def __iter__(self):
@@ -45,7 +48,12 @@ class World(Singleton):
 
     def update_world(self, elapsed_time):
         ' update all world'
-
+        current_events = self.next_simulation_loop_events
+        self.next_simulation_loop_events = []
+        
+        for event in current_events:
+            event.execute()
+            
         for character in self:
             character.update(elapsed_time)
             for _, client in self.remote_clients.items():
@@ -59,6 +67,11 @@ class World(Singleton):
             client.update_remote_client()
         for character in self:
             character.client_should_be_refreshed = False
+
+    
+    def add_event(self, event):
+        'add event for next simulation loop'
+        self.next_simulation_loop_events.append(event)
 
 
 class WorldIterator:
