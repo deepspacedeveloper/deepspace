@@ -103,7 +103,7 @@ class RemoteClient(WebSocketHandler):
 
 
     def on_close(self):
-        registry = RemoteClientRegistry(self)
+        registry = RemoteClientRegistry()
         registry.del_remote_client(self)
         self.visible_characters.clear()
         print("WebSocket closed:", self.uuid)
