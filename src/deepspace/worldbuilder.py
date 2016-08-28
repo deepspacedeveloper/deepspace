@@ -26,8 +26,8 @@ class TestWorldGenerator(AbstractWorldGenerator):
         pass
         
     def generate_world(self, world):
-        world.build_character(position_x=1000,position_y=1000,scale = 0.2)
-        world.build_character(position_x=1100,position_y=1100,scale = 0.2)
+        world.build_character(position_x=1000,position_y=1000,scale = 0.1)
+        #world.build_character(position_x=1100,position_y=1100,scale = 0.2)
         #world.build_character(position_x=1000,position_y=1100,scale = 0.2)
         #world.build_character(position_x=1100,position_y=1000,scale = 0.2)
 

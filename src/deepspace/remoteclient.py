@@ -187,6 +187,7 @@ class RemoteClient(WebSocketHandler):
         entities = []
         dbg = []
         
+        
         if self.client_visible_character.client_should_be_refreshed is True:
             
             self.line_speed.set_dxdy(self.client_visible_character.speed_x, 
@@ -222,7 +223,7 @@ class RemoteClient(WebSocketHandler):
                                  "speed_x":visible_character.character.speed_x - self.line_speed.delta_x,
                                  "speed_y":visible_character.character.speed_y - self.line_speed.delta_y})
                 dumped = json.dumps(dbg)
-                print(dumped)
+                print(self.uuid, "len=",len(self.visible_characters), dumped)
 
         self.need_refresh_visible_objects = False
         
