@@ -67,6 +67,7 @@ class LinearMovement(BaseBehaviour):
 
         self.animation_elapsed_time = total_time
 
+
     def animate(self, elapsed_time):
         """Animate character
         """
