@@ -52,13 +52,45 @@ class VisibleCharacter(object):
         self.command = command
 
 
-class RemoteClient(WebSocketHandler):
+class RemoteSocketHandler(WebSocketHandler):
+    'Wesocket handler passes events into RemoteClient'
+
+    def __init__(self, application, request):
+        super(RemoteSocketHandler, self).__init__(application, request)
+        
+        self.remote_client = RemoteClient()
+        
+        
+    def open(self):
+        print("WebSocket opened:", self.remote_client.uuid)
+        registry = RemoteClientRegistry()
+        registry.add_remote_client(self.remote_client)
+        self.remote_client.on_create_client()
+
+
+    def on_message(self, message):
+        print("ON_MESSAGE:",self.remote_client.uuid)
+        self.remote_client.parse_client_message(message)
+
+
+    def on_close(self):
+        print("WebSocket closed:", self.remote_client.uuid)
+        registry = RemoteClientRegistry()
+        registry.del_remote_client(self.remote_client)
+        self.remote_client.on_destroy_client()
+
+
+    def check_origin(self, origin):
+        return True
+    
+    
+class RemoteClient(object):
     '''WebSocket message handler
     handles client io
     '''
 
-    def __init__(self, application, request):
-        super(RemoteClient, self).__init__(application, request)
+    def __init__(self):
+        super(RemoteClient, self).__init__()
 
         self.uuid = ""
         self.uuid = uuid.uuid4().hex
@@ -76,7 +108,7 @@ class RemoteClient(WebSocketHandler):
         self.client_visible_character = None
         
         self.world = None
-        
+
 
     def change_world_position(self, position_x, position_y):
         'change world_position and set flag to refresh all visible objects'
@@ -88,29 +120,6 @@ class RemoteClient(WebSocketHandler):
         'change line_speed and set flag to refresh all visible objects'
         self.line_speed.set_dxdy(delta_x, delta_y)
         self.need_refresh_visible_objects = True
-
-
-    def open(self):
-        registry = RemoteClientRegistry()
-        registry.add_remote_client(self)
-        self.on_create_client()
-        print("WebSocket opened:", self.uuid)
-
-
-    def on_message(self, message):
-        print("ON_MESSAGE:",self.uuid)
-        self.parse_client_message(message)
-
-
-    def on_close(self):
-        registry = RemoteClientRegistry()
-        registry.del_remote_client(self)
-        self.visible_characters.clear()
-        print("WebSocket closed:", self.uuid)
-
-
-    def check_origin(self, origin):
-        return True
 
 
     def parse_client_message(self, message):
@@ -135,6 +144,11 @@ class RemoteClient(WebSocketHandler):
 
         self.client_visible_character =  self.world.build_character(self.world_position.x, self.world_position.y, 0.1)
         
+
+    def on_destroy_client(self):
+        'on destroy client'
+        self.remote_client.visible_characters.clear()
+
 
     def on_client_mouse_event(self, message_object):
         'process mouse event'

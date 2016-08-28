@@ -6,10 +6,9 @@ import time
 import tornado.ioloop
 import tornado.web
 
-
 from tornado import gen
 from deepspace.world import World
-from deepspace.remoteclient import RemoteClient
+from deepspace.remoteclient import RemoteSocketHandler
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -36,7 +35,7 @@ def make_app():
     return tornado.web.Application([
         (r"/", MainHandler),
         (r"/entity", EntityHandler),
-        (r"/websocket", RemoteClient)
+        (r"/websocket", RemoteSocketHandler)
     ])
 
 
