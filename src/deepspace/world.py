@@ -25,6 +25,12 @@ class World(Singleton):
 
     def __iter__(self):
         return WorldIterator(self._all_characters)
+    
+    def delete_all_objects(self):
+        self._character_counter = 0
+        self._character_by_uuid = {}
+        self._all_characters = []
+        self.remote_clients.del_all_remote_clients()
 
 
     def build_character(self, position_x=None, position_y=None, scale=1):
@@ -32,7 +38,9 @@ class World(Singleton):
         """
 
         new_character = Character(x = position_x, y = position_y, scale = scale)
-
+        
+        new_character.max_speed = 20 # TODO max_speed should be taken from other place
+        
         self._character_counter += 1
         self._character_by_uuid[new_character.uuid] = new_character
         self._all_characters.append(new_character)
@@ -64,7 +72,9 @@ class World(Singleton):
     def update_clients(self):
         'update remote clients'
         for _, client in self.remote_clients.items():
-            client.update_remote_client()
+            message = client.get_message_for_remote_client()
+            yield client.socket.write_message(message)
+            
         for character in self:
             character.client_should_be_refreshed = False
 

@@ -5,6 +5,7 @@ import uuid
 import json
 
 from deepspace.world import World
+from mock.mock import MagicMock
 
 
 class TestBaseCharacterFunctions(unittest.TestCase):
@@ -69,13 +70,12 @@ class TestBaseCharacterFunctions(unittest.TestCase):
 
         registry1 = RemoteClientRegistry()
         registry2 = RemoteClientRegistry()
+        registry1.del_all_remote_clients()
 
         class RemoteClientStub(object):
             'stub for RemoteClient'
-            self.uuid = ""
             def __init__(self):
                 self.uuid = uuid.uuid4().hex
-
 
         client1 = RemoteClientStub()
         client2 = RemoteClientStub()
@@ -128,3 +128,76 @@ class TestBaseCharacterFunctions(unittest.TestCase):
         self.assertEqual(is_valid_mouse_command(message_object), True,
                          "Validator is broken. It is valid message")
 
+
+    def test_remote_client_linear_movement(self):
+        '''Test for linear movement
+        1) create remote client object
+        2) add mouse event
+        3) simulate
+        4) check results and mocks
+        '''
+        from deepspace.remoteclient import RemoteSocketHandler
+        from deepspace.remoteclient import RemoteClient
+        from deepspace.world import World
+        
+        class mockRemoteSocketHandler(RemoteSocketHandler):
+            'fake socket handler'
+            def __init__(self):
+                '__init__ is not called intentionally'
+                self.remote_client = RemoteClient()
+
+        world = World()
+        world.delete_all_objects()
+        
+        remote_socket_handler = mockRemoteSocketHandler()
+        remote_socket_handler.open()
+        
+        self.assertIsNotNone(remote_socket_handler.remote_client, "RemoteClient is not initiated")
+        
+        remote_client = remote_socket_handler.remote_client
+
+        self.assertIsNotNone(world._character_by_uuid[remote_client.client_visible_character.uuid],"RemoteClientvisibleobject is not initiated")
+
+        client_visible_object = remote_client.client_visible_character
+        
+        client_visible_object.world_position.x = 0
+        client_visible_object.world_position.y = 0
+        client_visible_object.client_should_be_refreshed = True
+        remote_client.world_position.x = 0
+        remote_client.world_position.y = 0
+        
+        world.update_world(1)
+        #####################
+        # simulate world.update_clients() without yield
+        for _, client in world.remote_clients.items():
+            message = client.get_message_for_remote_client()
+            #yield client.socket.write_message(message)
+        for character in world:
+            character.client_should_be_refreshed = False
+        #####################
+        
+        self.assertEqual(remote_client.world_position.x, 0, "RemoteClient.x is not on 0 point")
+        self.assertEqual(remote_client.world_position.y, 0, "RemoteClient.y is not on 0 point")
+        
+        mouse_message = {}
+        mouse_message["command"] = "mouse_click"
+        mouse_message["button"] = 1
+        mouse_message["x"] = 100
+        mouse_message["y"] = 100
+        
+        client_visible_object.max_speed = 300
+        remote_client.on_client_mouse_event(mouse_message)
+        
+        world.update_world(3)
+        #####################
+        # simulate world.update_clients() without yield
+        for _, client in world.remote_clients.items():
+            message = client.get_message_for_remote_client()
+            #yield client.socket.write_message(message)
+        for character in world:
+            character.client_should_be_refreshed = False
+        #####################
+                
+        self.assertEqual(client_visible_object.world_position.x, 100, "Object.x is not on 100 point")
+        self.assertEqual(client_visible_object.world_position.y, 100, "Object.y is not on 100 point")
+        

@@ -14,6 +14,8 @@ class Character(object):
         
         self.speed_x = 0.0
         self.speed_y = 0.0
+        
+        self.max_speed = 0
     
         self.behaviours = []
     

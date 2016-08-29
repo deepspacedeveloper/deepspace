@@ -77,6 +77,22 @@ class LinearMovement(BaseBehaviour):
         self.character.world_position.x += delta_x
         self.character.world_position.y += delta_y
 
+        if self.point_from.x <  self.point_to.x:
+            if self.character.world_position.x >= self.point_to.x:
+                self.character.world_position.x = self.point_to.x
+
+        if self.point_from.x >  self.point_to.x:
+            if self.character.world_position.x <= self.point_to.x:
+                self.character.world_position.x = self.point_to.x
+
+        if self.point_from.y <  self.point_to.y:
+            if self.character.world_position.y >= self.point_to.y:
+                self.character.world_position.y = self.point_to.y
+
+        if self.point_from.y >  self.point_to.y:
+            if self.character.world_position.y <= self.point_to.y:
+                self.character.world_position.y = self.point_to.y
+
         self.animation_elapsed_time -= elapsed_time
 
 

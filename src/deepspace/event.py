@@ -35,7 +35,7 @@ class ClientMouseEvent(AbstractEvent):
         point_from = Point2d()
         point_from.set_xy(self.client_visible_character.world_position.x, self.client_visible_character.world_position.y) 
         
-        linear_movement = LinearMovement(point_from, self.mouse_world_position, 20) # TODO speed should be taken from object
+        linear_movement = LinearMovement(point_from, self.mouse_world_position, self.client_visible_character.max_speed) 
         self.client_visible_character.add_behaviour(linear_movement)
         
         self.remote_client.line_speed.set_dxdy(self.client_visible_character.speed_x, self.client_visible_character.speed_y)

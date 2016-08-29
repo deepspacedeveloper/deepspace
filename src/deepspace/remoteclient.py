@@ -35,6 +35,9 @@ class RemoteClientRegistry(Singleton):
         'del remote client'
         if self._remote_clients.__contains__(remote_client.uuid):
             del self._remote_clients[remote_client.uuid]
+    
+    def del_all_remote_clients(self):
+        self._remote_clients = {}
 
     def get_client_count(self):
         'returns client count'
@@ -53,11 +56,10 @@ class VisibleCharacter(object):
 
 
 class RemoteSocketHandler(WebSocketHandler):
-    'Wesocket handler passes events into RemoteClient'
+    'Websocket handler passes events into RemoteClient'
 
     def __init__(self, application, request):
         super(RemoteSocketHandler, self).__init__(application, request)
-        
         self.remote_client = RemoteClient()
         
         
@@ -65,6 +67,7 @@ class RemoteSocketHandler(WebSocketHandler):
         print("WebSocket opened:", self.remote_client.uuid)
         registry = RemoteClientRegistry()
         registry.add_remote_client(self.remote_client)
+        self.remote_client.attach_to_socket(self)
         self.remote_client.on_create_client()
 
 
@@ -88,27 +91,22 @@ class RemoteClient(object):
     '''WebSocket message handler
     handles client io
     '''
-
     def __init__(self):
         super(RemoteClient, self).__init__()
-
-        self.uuid = ""
-        self.uuid = uuid.uuid4().hex
-
-        self.visible_characters = {}
-
-        self.display_width = 1920
-        self.display_height = 1080
-        
-        self.line_speed = Vector2D() 
-        self.world_position = Point2d()
-        
+        self.uuid                       = uuid.uuid4().hex
+        self.visible_characters         = {}
+        self.display_width              = 1920 # TODO take it from client side
+        self.display_height             = 1080
+        self.line_speed                 = Vector2D() 
+        self.world_position             = Point2d()
         self.need_refresh_visible_objects = False
-        
-        self.client_visible_character = None
-        
-        self.world = None
+        self.client_visible_character   = None
+        self.world                      = None
+        self.socket                     = None
 
+    
+    def attach_to_socket(self, socket):
+        self.socket = socket
 
     def change_world_position(self, position_x, position_y):
         'change world_position and set flag to refresh all visible objects'
@@ -147,7 +145,7 @@ class RemoteClient(object):
 
     def on_destroy_client(self):
         'on destroy client'
-        self.remote_client.visible_characters.clear()
+        self.visible_characters.clear()
 
 
     def on_client_mouse_event(self, message_object):
@@ -195,12 +193,11 @@ class RemoteClient(object):
                     self.visible_characters[character.uuid].command = "delete"
 
 
-    @gen.coroutine
-    def update_remote_client(self):
+    
+    def get_message_for_remote_client(self):
         'send data to remote clinet'
         entities = []
         dbg = []
-        
         
         if self.client_visible_character.client_should_be_refreshed is True:
             
@@ -242,7 +239,7 @@ class RemoteClient(object):
         self.need_refresh_visible_objects = False
         
         result = json.dumps(entities)
-        yield self.write_message(result)
+        return result
 
 
 
