@@ -65,7 +65,7 @@ class World(Singleton):
         for character in self:
             character.update(elapsed_time)
             for _, client in self.remote_clients.items():
-                client.update_visible_character(character)
+                client.update_visible_character_list(character)
 
 
     @gen.coroutine

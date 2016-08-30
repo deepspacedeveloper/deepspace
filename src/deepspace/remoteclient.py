@@ -178,7 +178,7 @@ class RemoteClient(object):
         return False
 
 
-    def update_visible_character(self, character):
+    def update_visible_character_list(self, character):
         'append visible character'
         if self.is_point_visible(character.world_position):
             if self.visible_characters.__contains__(character.uuid):

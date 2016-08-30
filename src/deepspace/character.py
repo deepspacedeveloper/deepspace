@@ -30,12 +30,11 @@ class Character(object):
         """update character state
         """
         for behaviour in self.behaviours:
+            behaviour.animate(elapsed_time)
             if behaviour.is_done():
                 behaviour.detach()
                 self.behaviours.remove(behaviour)
                 self.client_should_be_refreshed = True
-            else:
-                behaviour.animate(elapsed_time)
 
 
     def add_behaviour(self, behaviour):

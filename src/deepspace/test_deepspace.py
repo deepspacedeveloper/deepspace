@@ -138,66 +138,136 @@ class TestBaseCharacterFunctions(unittest.TestCase):
         '''
         from deepspace.remoteclient import RemoteSocketHandler
         from deepspace.remoteclient import RemoteClient
-        from deepspace.world import World
-        
+
         class mockRemoteSocketHandler(RemoteSocketHandler):
             'fake socket handler'
             def __init__(self):
                 '__init__ is not called intentionally'
                 self.remote_client = RemoteClient()
+        
+        def print_world_position(text, visible_object):
+            print(text, "x=",visible_object.world_position.x,"y=", visible_object.world_position.y)
 
+        def simulate_world(elapsed_time):
+            world.update_world(elapsed_time)
+            #####################
+            # simulate world.update_clients() without yield
+            for _, client in world.remote_clients.items():
+                message = client.get_message_for_remote_client()
+                #yield client.socket.write_message(message)
+            for character in world:
+                character.client_should_be_refreshed = False
+            #####################
+            
         world = World()
         world.delete_all_objects()
         
-        remote_socket_handler = mockRemoteSocketHandler()
-        remote_socket_handler.open()
+        remote_socket_handler_1 = mockRemoteSocketHandler()
+        remote_socket_handler_1.open()
         
-        self.assertIsNotNone(remote_socket_handler.remote_client, "RemoteClient is not initiated")
-        
-        remote_client = remote_socket_handler.remote_client
+        remote_socket_handler_2 = mockRemoteSocketHandler()
+        remote_socket_handler_2.open()
 
-        self.assertIsNotNone(world._character_by_uuid[remote_client.client_visible_character.uuid],"RemoteClientvisibleobject is not initiated")
+        self.assertIsNotNone(remote_socket_handler_1.remote_client, "RemoteClient1 is not initiated")
+        self.assertIsNotNone(remote_socket_handler_2.remote_client, "RemoteClient2 is not initiated")
+        
+        remote_client_1 = remote_socket_handler_1.remote_client
+        remote_client_2 = remote_socket_handler_2.remote_client
+        
+        remote_client_1.uuid = "client_1"
+        remote_client_2.uuid = "client_2"
 
-        client_visible_object = remote_client.client_visible_character
+        self.assertIsNotNone(world._character_by_uuid[remote_client_1.client_visible_character.uuid],"RemoteClientvisibleobject1 is not initiated")
+        self.assertIsNotNone(world._character_by_uuid[remote_client_2.client_visible_character.uuid],"RemoteClientvisibleobject2 is not initiated")
+
+        client_visible_object_1 = remote_client_1.client_visible_character
+        client_visible_object_2 = remote_client_2.client_visible_character
         
-        client_visible_object.world_position.x = 0
-        client_visible_object.world_position.y = 0
-        client_visible_object.client_should_be_refreshed = True
-        remote_client.world_position.x = 0
-        remote_client.world_position.y = 0
+        client_visible_object_1.uuid = "object_1"
+        client_visible_object_2.uuid = "object_2"
         
-        world.update_world(1)
-        #####################
-        # simulate world.update_clients() without yield
-        for _, client in world.remote_clients.items():
-            message = client.get_message_for_remote_client()
-            #yield client.socket.write_message(message)
-        for character in world:
-            character.client_should_be_refreshed = False
-        #####################
+        client_visible_object_1.world_position.x = 0
+        client_visible_object_1.world_position.y = 0
+        client_visible_object_1.client_should_be_refreshed = True
+        remote_client_1.world_position.x = client_visible_object_1.world_position.x
+        remote_client_1.world_position.y = client_visible_object_1.world_position.y
+
+        client_visible_object_2.world_position.x = 300
+        client_visible_object_2.world_position.y = 0
+        client_visible_object_2.client_should_be_refreshed = True
+        remote_client_2.world_position.x = client_visible_object_2.world_position.x
+        remote_client_2.world_position.y = client_visible_object_2.world_position.y
         
-        self.assertEqual(remote_client.world_position.x, 0, "RemoteClient.x is not on 0 point")
-        self.assertEqual(remote_client.world_position.y, 0, "RemoteClient.y is not on 0 point")
-        
-        mouse_message = {}
-        mouse_message["command"] = "mouse_click"
-        mouse_message["button"] = 1
-        mouse_message["x"] = 100
-        mouse_message["y"] = 100
-        
-        client_visible_object.max_speed = 300
-        remote_client.on_client_mouse_event(mouse_message)
-        
-        world.update_world(3)
-        #####################
-        # simulate world.update_clients() without yield
-        for _, client in world.remote_clients.items():
-            message = client.get_message_for_remote_client()
-            #yield client.socket.write_message(message)
-        for character in world:
-            character.client_should_be_refreshed = False
-        #####################
+        print("Simulation 0")
+        simulate_world(1)
                 
-        self.assertEqual(client_visible_object.world_position.x, 100, "Object.x is not on 100 point")
-        self.assertEqual(client_visible_object.world_position.y, 100, "Object.y is not on 100 point")
+        print_world_position("O1.0) world",client_visible_object_1)
+        print_world_position("O2.0) world",client_visible_object_2)
         
+        self.assertEqual(remote_client_1.world_position.x, 0, "RemoteClient.x is not on 0 point")
+        self.assertEqual(remote_client_1.world_position.y, 0, "RemoteClient.y is not on 0 point")
+
+        self.assertEqual(remote_client_2.world_position.x, 300, "RemoteClient.x is not on world 1000")
+        self.assertEqual(remote_client_2.world_position.y, 0, "RemoteClient.y is not on world 0")
+        
+        mouse_message_1 = {}
+        mouse_message_1["command"] = "mouse_click"
+        mouse_message_1["button"] = 1
+        mouse_message_1["x"] = 300 # world coordinates
+        mouse_message_1["y"] = 0
+        
+        client_visible_object_1.max_speed = 50
+        remote_client_1.on_client_mouse_event(mouse_message_1)
+        
+        print("Simulation 1")
+        print("client_1:",mouse_message_1)
+        simulate_world(1)
+                
+        print_world_position("O1.1) world",client_visible_object_1)
+        print_world_position("O2.1) world",client_visible_object_2)
+
+        print("Simulation 2")        
+        simulate_world(1)
+        
+        print_world_position("O1.2) world",client_visible_object_1)
+        print_world_position("O2.2) world",client_visible_object_2)
+
+        mouse_message_2 = {}
+        mouse_message_2["command"] = "mouse_click"
+        mouse_message_2["button"] = 1
+        mouse_message_2["x"] = 0 # world coordinates
+        mouse_message_2["y"] = 0
+        
+        client_visible_object_2.max_speed = 50
+        remote_client_2.on_client_mouse_event(mouse_message_2)
+
+        print("Simulation 3")        
+        print("client_2:",mouse_message_2)
+        simulate_world(1)
+        
+        print_world_position("O1.3) world",client_visible_object_1)
+        print_world_position("O2.3) world",client_visible_object_2)
+
+        print("Simulation 4")        
+        simulate_world(1)
+        
+        print_world_position("O1.4) world",client_visible_object_1)
+        print_world_position("O2.4) world",client_visible_object_2)
+
+        print("Simulation 5")        
+        simulate_world(1)
+        
+        print_world_position("O1.5) world",client_visible_object_1)
+        print_world_position("O2.5) world",client_visible_object_2)
+
+        print("Simulation 6")        
+        simulate_world(1)
+        
+        print_world_position("O1.6) world",client_visible_object_1)
+        print_world_position("O2.6) world",client_visible_object_2)
+
+        print("Simulation 7")        
+        simulate_world(1)
+        
+        print_world_position("O1.7) world",client_visible_object_1)
+        print_world_position("O2.7) world",client_visible_object_2)

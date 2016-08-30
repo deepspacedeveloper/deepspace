@@ -54,18 +54,27 @@ class LinearMovement(BaseBehaviour):
         total_length = math.sqrt(math.pow(self.point_to.x - self.point_from.x, 2)+
                                  math.pow(self.point_to.y - self.point_from.y, 2))
         
-        total_time = total_length/self.speed
-        
-        self.speed_x = (self.point_to.x - self.point_from.x)/total_time
-        self.speed_y = (self.point_to.y - self.point_from.y)/total_time
-        
-        self.character.speed_x += self.speed_x
-        self.character.speed_y += self.speed_y 
-        
-        self.character.world_position.x = self.point_from.x
-        self.character.world_position.y = self.point_from.y
-
-        self.animation_elapsed_time = total_time
+        if self.speed != 0 and total_length !=0:
+            total_time = total_length/self.speed
+            
+            self.speed_x = (self.point_to.x - self.point_from.x)/total_time
+            self.speed_y = (self.point_to.y - self.point_from.y)/total_time
+            
+            self.character.speed_x += self.speed_x
+            self.character.speed_y += self.speed_y 
+            
+            self.character.world_position.x = self.point_from.x
+            self.character.world_position.y = self.point_from.y
+    
+            self.animation_elapsed_time = total_time
+        else:
+            self.speed_x = 0
+            self.speed_y = 0
+            
+            self.character.world_position.x = self.point_from.x
+            self.character.world_position.y = self.point_from.y
+    
+            self.animation_elapsed_time = 0
 
 
     def animate(self, elapsed_time):
@@ -94,6 +103,9 @@ class LinearMovement(BaseBehaviour):
                 self.character.world_position.y = self.point_to.y
 
         self.animation_elapsed_time -= elapsed_time
+        
+        if self.animation_elapsed_time < 0:
+            self.animation_elapsed_time = 0 
 
 
     def is_done(self):
