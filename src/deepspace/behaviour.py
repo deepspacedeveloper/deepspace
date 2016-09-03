@@ -1,18 +1,19 @@
 """ Behaviour classes
 """
 import math
+from deepspace.math2d import Point2d
 
-class BaseBehaviour(object):
+class AbstractAnimator(object):
     """Base class for Command
     """
     def __init__(self):
-        super(BaseBehaviour, self).__init__()
+        super(AbstractAnimator, self).__init__()
         
         self.character     = None
 
 
-    def attach(self, character):
-        """ attach to character
+    def attach_to_character(self, character):
+        """ attach_to_character to character
         """
         self.character     = character
 
@@ -32,24 +33,27 @@ class BaseBehaviour(object):
         pass
 
 
-class LinearMovement(BaseBehaviour):
+class LinearMovementAnimator(AbstractAnimator):
     """2d linear movement animator
     """
     def __init__(self, point_from, point_to, speed):
-        super(LinearMovement, self).__init__()
+        super(LinearMovementAnimator, self).__init__()
        
-        self.point_from = point_from
-        self.point_to   = point_to
+        self.point_from = Point2d()
+        self.point_from.set_xy(point_from.x, point_from.y)
+        
+        self.point_to   = Point2d()
+        self.point_to.set_xy(point_to.x, point_to.y)
         self.speed      = speed
         self.speed_x         = 0.0
         self.speed_y         = 0.0
         self.animation_elapsed_time = 0.0
 
 
-    def attach(self, character):
-        """ attach and init params
+    def attach_to_character(self, character):
+        """ attach_to_character and init params
         """
-        super(LinearMovement, self).attach(character)
+        super(LinearMovementAnimator, self).attach_to_character(character)
 
         total_length = math.sqrt(math.pow(self.point_to.x - self.point_from.x, 2)+
                                  math.pow(self.point_to.y - self.point_from.y, 2))

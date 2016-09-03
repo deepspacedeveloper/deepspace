@@ -31,6 +31,7 @@ class World(Singleton):
         self._character_by_uuid = {}
         self._all_characters = []
         self.remote_clients.del_all_remote_clients()
+        self.next_simulation_loop_events = []
 
 
     def build_character(self, position_x=None, position_y=None, scale=1):

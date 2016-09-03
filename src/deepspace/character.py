@@ -9,7 +9,6 @@ class Character(object):
     def __init__(self, name=None, x=0, y=0, scale=1):
         super(Character, self).__init__()
         
-        self.uuid = ""
         self.uuid = uuid.uuid4().hex
         
         self.speed_x = 0.0
@@ -30,21 +29,23 @@ class Character(object):
         """update character state
         """
         for behaviour in self.behaviours:
-            behaviour.animate(elapsed_time)
+            if not behaviour.is_done():
+                behaviour.animate(elapsed_time)
+
             if behaviour.is_done():
                 behaviour.detach()
                 self.behaviours.remove(behaviour)
                 self.client_should_be_refreshed = True
 
-
+        
     def add_behaviour(self, behaviour):
         """add behaviour
         """
-        behaviour.attach(self)
+        behaviour.attach_to_character(self)
         self.behaviours.append(behaviour)
 
         self.client_should_be_refreshed = True
-
+        
 
     def remove_all_behaviours(self):
         'remove all animators'

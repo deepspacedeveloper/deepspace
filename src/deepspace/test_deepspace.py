@@ -3,6 +3,7 @@
 import unittest
 import uuid
 import json
+import sys
 
 from deepspace.world import World
 from mock.mock import MagicMock
@@ -15,9 +16,9 @@ class TestBaseCharacterFunctions(unittest.TestCase):
     def test_basic_behaviour(self):
         """Test for basic behaviour
         """
-        from deepspace.behaviour import BaseBehaviour
+        from deepspace.behaviour import AbstractAnimator
 
-        class SimpleIncrementXOnce(BaseBehaviour):
+        class SimpleIncrementXOnce(AbstractAnimator):
             """increate position_x once
             """
             counter = 0
@@ -145,7 +146,16 @@ class TestBaseCharacterFunctions(unittest.TestCase):
                 '__init__ is not called intentionally'
                 self.remote_client = RemoteClient()
         
+        verbose_mode = False
+        
+        def debug_print(*params, sep=' ', end='\n', file=sys.stdout, flush=False):
+            if verbose_mode:
+                print(*params)
+        
         def print_world_position(text, visible_object):
+            if not verbose_mode: 
+                return
+            
             print(text, "x=",visible_object.world_position.x,"y=", visible_object.world_position.y)
 
         def simulate_world(elapsed_time):
@@ -198,7 +208,7 @@ class TestBaseCharacterFunctions(unittest.TestCase):
         remote_client_2.world_position.x = client_visible_object_2.world_position.x
         remote_client_2.world_position.y = client_visible_object_2.world_position.y
         
-        print("Simulation 0")
+        debug_print("Simulation 0")
         simulate_world(1)
                 
         print_world_position("O1.0) world",client_visible_object_1)
@@ -213,61 +223,103 @@ class TestBaseCharacterFunctions(unittest.TestCase):
         mouse_message_1 = {}
         mouse_message_1["command"] = "mouse_click"
         mouse_message_1["button"] = 1
-        mouse_message_1["x"] = 300 # world coordinates
+        mouse_message_1["x"] = 300 # client coordinates
         mouse_message_1["y"] = 0
         
         client_visible_object_1.max_speed = 50
         remote_client_1.on_client_mouse_event(mouse_message_1)
         
-        print("Simulation 1")
-        print("client_1:",mouse_message_1)
+        debug_print("Simulation 1")
+        debug_print("client_1:",mouse_message_1)
         simulate_world(1)
                 
         print_world_position("O1.1) world",client_visible_object_1)
         print_world_position("O2.1) world",client_visible_object_2)
+        
+        self.assertEqual(remote_client_1.world_position.x, 50, "RemoteClient.x is not on 50 point")
+        self.assertEqual(remote_client_1.world_position.y, 0, "RemoteClient.y is not on 0 point")
 
-        print("Simulation 2")        
+        self.assertEqual(remote_client_2.world_position.x, 300, "RemoteClient.x is not on world 300")
+        self.assertEqual(remote_client_2.world_position.y, 0, "RemoteClient.y is not on world 0")        
+
+        debug_print("Simulation 2")        
         simulate_world(1)
         
         print_world_position("O1.2) world",client_visible_object_1)
         print_world_position("O2.2) world",client_visible_object_2)
 
+        self.assertEqual(remote_client_1.world_position.x, 100, "RemoteClient.x is not on 100 point")
+        self.assertEqual(remote_client_1.world_position.y, 0, "RemoteClient.y is not on 0 point")
+
+        self.assertEqual(remote_client_2.world_position.x, 300, "RemoteClient.x is not on world 300")
+        self.assertEqual(remote_client_2.world_position.y, 0, "RemoteClient.y is not on world 0")      
+        
         mouse_message_2 = {}
         mouse_message_2["command"] = "mouse_click"
         mouse_message_2["button"] = 1
-        mouse_message_2["x"] = 0 # world coordinates
+        mouse_message_2["x"] = -300 # client coordinates
         mouse_message_2["y"] = 0
         
         client_visible_object_2.max_speed = 50
         remote_client_2.on_client_mouse_event(mouse_message_2)
 
-        print("Simulation 3")        
-        print("client_2:",mouse_message_2)
+        debug_print("Simulation 3")        
+        debug_print("client_2:",mouse_message_2)
         simulate_world(1)
         
         print_world_position("O1.3) world",client_visible_object_1)
         print_world_position("O2.3) world",client_visible_object_2)
+        
+        self.assertEqual(remote_client_1.world_position.x, 150, "RemoteClient.x is not on 150 point")
+        self.assertEqual(remote_client_1.world_position.y, 0, "RemoteClient.y is not on 0 point")
 
-        print("Simulation 4")        
+        self.assertEqual(remote_client_2.world_position.x, 250, "RemoteClient.x is not on world 250")
+        self.assertEqual(remote_client_2.world_position.y, 0, "RemoteClient.y is not on world 0")           
+
+        debug_print("Simulation 4")        
         simulate_world(1)
         
         print_world_position("O1.4) world",client_visible_object_1)
         print_world_position("O2.4) world",client_visible_object_2)
+        
+        self.assertEqual(remote_client_1.world_position.x, 200, "RemoteClient.x is not on 200 point")
+        self.assertEqual(remote_client_1.world_position.y, 0, "RemoteClient.y is not on 0 point")
 
-        print("Simulation 5")        
+        self.assertEqual(remote_client_2.world_position.x, 200, "RemoteClient.x is not on world 200")
+        self.assertEqual(remote_client_2.world_position.y, 0, "RemoteClient.y is not on world 0")          
+
+        debug_print("Simulation 5")        
         simulate_world(1)
         
         print_world_position("O1.5) world",client_visible_object_1)
         print_world_position("O2.5) world",client_visible_object_2)
 
-        print("Simulation 6")        
+        debug_print("Simulation 6")        
         simulate_world(1)
         
         print_world_position("O1.6) world",client_visible_object_1)
         print_world_position("O2.6) world",client_visible_object_2)
 
-        print("Simulation 7")        
+        debug_print("Simulation 7")        
         simulate_world(1)
         
         print_world_position("O1.7) world",client_visible_object_1)
         print_world_position("O2.7) world",client_visible_object_2)
+
+        debug_print("Simulation 8")        
+        simulate_world(1)
+        
+        print_world_position("O1.8) world",client_visible_object_1)
+        print_world_position("O2.8) world",client_visible_object_2)
+
+        debug_print("Simulation 9")        
+        simulate_world(1)
+        
+        print_world_position("O1.9) world",client_visible_object_1)
+        print_world_position("O2.9) world",client_visible_object_2)
+        
+        self.assertEqual(remote_client_1.world_position.x, 300, "RemoteClient.x is not on 300 point")
+        self.assertEqual(remote_client_1.world_position.y, 0, "RemoteClient.y is not on 0 point")
+
+        self.assertEqual(remote_client_2.world_position.x, 0, "RemoteClient.x is not on world 0")
+        self.assertEqual(remote_client_2.world_position.y, 0, "RemoteClient.y is not on world 0")         

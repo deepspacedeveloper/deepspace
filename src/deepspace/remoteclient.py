@@ -64,7 +64,6 @@ class RemoteSocketHandler(WebSocketHandler):
         
         
     def open(self):
-        print("WebSocket opened:", self.remote_client.uuid)
         registry = RemoteClientRegistry()
         registry.add_remote_client(self.remote_client)
         self.remote_client.attach_to_socket(self)
@@ -72,12 +71,10 @@ class RemoteSocketHandler(WebSocketHandler):
 
 
     def on_message(self, message):
-        print("ON_MESSAGE:",self.remote_client.uuid)
         self.remote_client.parse_client_message(message)
 
 
     def on_close(self):
-        print("WebSocket closed:", self.remote_client.uuid)
         registry = RemoteClientRegistry()
         registry.del_remote_client(self.remote_client)
         self.remote_client.on_destroy_client()
@@ -124,7 +121,6 @@ class RemoteClient(object):
         'parse message and dispatch it'
         try:
             message_object = json.loads(message)
-            print(message)
 
             if deepspace.messages.is_valid_mouse_command(message_object):
                 self.on_client_mouse_event(message_object)
@@ -157,7 +153,7 @@ class RemoteClient(object):
                                     self.world_position.y + message_object["y"])
         
         mouse_event = ClientMouseEvent()
-        mouse_event.attach(mouse_world_position, self.client_visible_character, self)
+        mouse_event.attach_to_character(mouse_world_position, self.client_visible_character, self)
         
         self.world.add_event(mouse_event)
         
@@ -199,15 +195,14 @@ class RemoteClient(object):
         entities = []
         dbg = []
         
-        if self.client_visible_character.client_should_be_refreshed is True:
-            
-            self.line_speed.set_dxdy(self.client_visible_character.speed_x, 
-                                     self.client_visible_character.speed_y)
-            
-            self.world_position.set_xy(self.client_visible_character.world_position.x, 
-                                       self.client_visible_character.world_position.y)
-            
+        if self.client_visible_character.client_should_be_refreshed is True:            
             self.need_refresh_visible_objects = True
+        
+        self.line_speed.set_dxdy(self.client_visible_character.speed_x, 
+                                 self.client_visible_character.speed_y)
+        
+        self.world_position.set_xy(self.client_visible_character.world_position.x, 
+                                   self.client_visible_character.world_position.y)
         
         for _, visible_character in self.visible_characters.items():
 
@@ -234,7 +229,6 @@ class RemoteClient(object):
                                  "speed_x":visible_character.character.speed_x - self.line_speed.delta_x,
                                  "speed_y":visible_character.character.speed_y - self.line_speed.delta_y})
                 dumped = json.dumps(dbg)
-                print(self.uuid, "len=",len(self.visible_characters), dumped)
 
         self.need_refresh_visible_objects = False
         
