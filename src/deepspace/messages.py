@@ -18,4 +18,19 @@ def is_valid_mouse_command(message_object):
 
     return True
 
+
+def is_valid_upd_display_command(message_object):
+    'check all fields for upd_display_size command'
+    try:
+        if (message_object["command"] != "upd_display_size"
+            ) or (
+            message_object["display_x"] is None
+            ) or (
+            message_object["display_y"] is None):
+            return False
+
+    except BaseException:
+        return False
+
+    return True
     

@@ -124,6 +124,8 @@ class RemoteClient(object):
 
             if deepspace.messages.is_valid_mouse_command(message_object):
                 self.on_client_mouse_event(message_object)
+            elif deepspace.messages.is_valid_upd_display_command(message_object):
+                self.on_client_change_display_size(message_object)
             else:
                 print("Invalid message")
 
@@ -157,6 +159,15 @@ class RemoteClient(object):
         
         self.world.add_event(mouse_event)
         
+
+    def on_client_change_display_size(self, message_object):
+        'process command client changed display size'
+        self.display_height = message_object["display_y"]
+        self.display_width  = message_object["display_x"]
+        self.need_refresh_visible_objects = True
+
+        print("New client sizes: ", self.display_height, self.display_width)
+
 
     def is_point_visible(self, world_position):
         'checks is point visible in camera'

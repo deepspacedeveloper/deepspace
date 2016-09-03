@@ -16,14 +16,30 @@ console.log("clientH:", h);
 var renderer = PIXI.autoDetectRenderer(w, h,{backgroundColor : 0x1099bb});
 document.body.appendChild(renderer.view);
 
+
 // create the root of the scene graph
 var stage = new PIXI.Container();
 
 visible_objects = {};
 
 var ws = new WebSocket("ws://localhost:8888/websocket");
+
 ws.onopen = function() {
-  // ws.send("Hello, world");
+
+	var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+	var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+
+	display_y = h / 2;
+	display_x = w / 2;
+	
+	msg_obj = {}
+	
+	msg_obj["command"] = "upd_display_size"
+	msg_obj["display_x"] = display_x
+	msg_obj["display_y"] = display_y
+	
+	console.log(JSON.stringify(msg_obj))	
+	ws.send(JSON.stringify(msg_obj))
 };
 
 
@@ -84,7 +100,6 @@ ws.onmessage = function (evt) {
 
 };
 
-
 document.body.onclick = function(event) {
 	msg_obj = {}
 	
@@ -98,6 +113,23 @@ document.body.onclick = function(event) {
 	ws.send(JSON.stringify(msg_obj))
 }
 
+document.body.onresize=function(){
+	var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+	var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+	renderer.resize(w, h)
+	
+	display_y = h / 2;
+	display_x = w / 2;
+	
+	msg_obj = {}
+	
+	msg_obj["command"] = "upd_display_size"
+	msg_obj["display_x"] = display_x
+	msg_obj["display_y"] = display_y
+	
+	console.log(JSON.stringify(msg_obj))	
+	ws.send(JSON.stringify(msg_obj))
+}; 
 
 // create a texture from an image path
 var texture = PIXI.Texture.fromImage('assets/spaceship.png');
