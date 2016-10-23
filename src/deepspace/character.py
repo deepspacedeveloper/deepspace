@@ -8,8 +8,10 @@ class Character(object):
     """
     def __init__(self, name=None, x=0, y=0, scale=1):
         super(Character, self).__init__()
-        
-        self.uuid = uuid.uuid4().hex
+        if name:
+            self.uuid = name
+        else:
+            self.uuid = uuid.uuid4().hex
         
         self.speed_x = 0.0
         self.speed_y = 0.0

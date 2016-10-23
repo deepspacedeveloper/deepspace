@@ -111,7 +111,6 @@ class LinearMovementAnimator(AbstractAnimator):
         if self.animation_elapsed_time < 0:
             self.animation_elapsed_time = 0 
 
-
     def is_done(self):
         """Return True if animation is finished and should be deleted
         """

@@ -55,7 +55,7 @@ class World(Singleton):
         return self._character_counter
 
 
-    def update_world(self, elapsed_time):
+    def simulate_world(self, elapsed_time):
         ' update all world'
         current_events = self.next_simulation_loop_events
         self.next_simulation_loop_events = []

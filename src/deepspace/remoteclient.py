@@ -8,7 +8,6 @@ from deepspace.math2d import Vector2D
 from deepspace.event import ClientMouseEvent
 import deepspace.messages  
 from tornado.websocket import WebSocketHandler
-from tornado import gen
 
 
 class RemoteClientRegistry(Singleton):
@@ -92,7 +91,7 @@ class RemoteClient(object):
         super(RemoteClient, self).__init__()
         self.uuid                       = uuid.uuid4().hex
         self.visible_characters         = {}
-        self.display_width              = 1920 # TODO take it from client side
+        self.display_width              = 1920
         self.display_height             = 1080
         self.line_speed                 = Vector2D() 
         self.world_position             = Point2d()
@@ -204,7 +203,6 @@ class RemoteClient(object):
     def get_message_for_remote_client(self):
         'send data to remote clinet'
         entities = []
-        dbg = []
         
         if self.client_visible_character.client_should_be_refreshed is True:            
             self.need_refresh_visible_objects = True
@@ -231,15 +229,6 @@ class RemoteClient(object):
                                  "command":visible_character.command,
                                  "speed_x":visible_character.character.speed_x - self.line_speed.delta_x,
                                  "speed_y":visible_character.character.speed_y - self.line_speed.delta_y})
-                dbg = []
-                dbg.append({"name":visible_character.character.uuid,
-                                 "x":visible_character.character.world_position.x - self.world_position.x,
-                                 "y":visible_character.character.world_position.y - self.world_position.y,
-                                 "scale":visible_character.character.scale,
-                                 "command":visible_character.command,
-                                 "speed_x":visible_character.character.speed_x - self.line_speed.delta_x,
-                                 "speed_y":visible_character.character.speed_y - self.line_speed.delta_y})
-                dumped = json.dumps(dbg)
 
         self.need_refresh_visible_objects = False
         

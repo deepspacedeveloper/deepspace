@@ -49,14 +49,14 @@ def init_world():
     
 
 @gen.coroutine
-def updater():
+def simulator():
     'update world coroutine'
     start_time = time.time()
     while True:
         yield gen.sleep(0.1)
         elapsed_time = time.time() - start_time
         start_time = time.time()
-        world.update_world(elapsed_time)
+        world.simulate_world(elapsed_time)
 
 
 @gen.coroutine
@@ -70,7 +70,7 @@ world = World()
 
 if __name__ == "__main__":
     init_world()
-    tornado.ioloop.IOLoop.current().add_callback(updater)
+    tornado.ioloop.IOLoop.current().add_callback(simulator)
     tornado.ioloop.IOLoop.current().add_callback(updater_clients)
     application_instance = make_app()
     application_instance.listen(8888)

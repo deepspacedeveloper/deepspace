@@ -3,10 +3,8 @@
 import unittest
 import uuid
 import json
-import sys
 
 from deepspace.world import World
-from mock.mock import MagicMock
 
 
 class TestBaseCharacterFunctions(unittest.TestCase):
@@ -139,18 +137,19 @@ class TestBaseCharacterFunctions(unittest.TestCase):
         '''
         from deepspace.remoteclient import RemoteSocketHandler
         from deepspace.remoteclient import RemoteClient
+        import sys
 
         class mockRemoteSocketHandler(RemoteSocketHandler):
             'fake socket handler'
             def __init__(self):
-                '__init__ is not called intentionally'
+                'super.__init__ is not called intentionally'
                 self.remote_client = RemoteClient()
         
         verbose_mode = False
         
         def debug_print(*params, sep=' ', end='\n', file=sys.stdout, flush=False):
             if verbose_mode:
-                print(*params)
+                print(*params, sep=sep, end=end, file=file, flush=flush)
         
         def print_world_position(text, visible_object):
             if not verbose_mode: 
@@ -159,11 +158,12 @@ class TestBaseCharacterFunctions(unittest.TestCase):
             print(text, "x=",visible_object.world_position.x,"y=", visible_object.world_position.y)
 
         def simulate_world(elapsed_time):
-            world.update_world(elapsed_time)
+            world.simulate_world(elapsed_time)
             #####################
             # simulate world.update_clients() without yield
             for _, client in world.remote_clients.items():
                 message = client.get_message_for_remote_client()
+                debug_print(message)
                 #yield client.socket.write_message(message)
             for character in world:
                 character.client_should_be_refreshed = False
